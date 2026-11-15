@@ -46,7 +46,7 @@ DEMO_STATE_PATH = os.path.join(os.path.dirname(__file__), "demo_state.json")
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "view_template.html")
 HTML_OUT_PATH = os.path.join(os.path.dirname(__file__), "demo_view.html")
 
-D4 = {"customer": "Cafe Brule", "amount": "2690.00", "payer_name": "CAFE BRULE",
+D4 = {"customer": "Café Brûlé", "amount": "2690.00", "payer_name": "CAFÉ BRÛLÉ",
       "reference": "BRULE/INV104 FINAL"}
 
 DEPOSIT_LABELS = {
@@ -152,6 +152,29 @@ def resolve_rules_only(candidates, amount):
                    f"no model available, flagging for a human")
 
 
+def payer_name_of(dep):
+    payer = dep.get("payer")
+    if isinstance(payer, dict):
+        return payer.get("name", "")
+    return dep.get("payer_name", "")
+
+
+def deposit_card_info(dep, accounts, reference, outcome):
+    customer = spine.account_customer(accounts, dep.get("global_account_id"))
+    acct = accounts.get(customer, {})
+    acct_id = acct.get("id", "")
+    return {
+        "amount": dep.get("amount"),
+        "currency": dep.get("currency", "USD"),
+        "payer": payer_name_of(dep),
+        "reference": reference,
+        "account_customer": customer,
+        "account_id": acct_id,
+        "account_id_last5": acct_id[-5:] if acct_id else "",
+        "outcome": outcome,
+    }
+
+
 def process_deposit(dep, accounts, invoices):
     customer = spine.account_customer(accounts, dep.get("global_account_id"))
     amount = dep.get("amount")
@@ -159,15 +182,18 @@ def process_deposit(dep, accounts, invoices):
     digits = spine.match_reference(reference)
 
     if not digits:
+        outcome = "No invoice number in the reference - skipped"
         print(f"  [SKIP] {customer} ${amount:.2f} ref={reference!r} - no invoice number in reference")
-        return
+        return outcome
     candidates = spine.candidates_for(invoices, customer, digits)
     if not candidates:
+        outcome = "No open invoice matches - skipped"
         print(f"  [SKIP] {customer} ${amount:.2f} ref={reference!r} - no open invoice matches")
-        return
+        return outcome
 
     _, note = resolve_rules_only(candidates, amount)
     print(f"  {note} ({customer})")
+    return note.split("] ", 1)[-1]  # drop the [TAG] prefix, keep the rest
 
 
 def poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
@@ -199,17 +225,19 @@ def poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
         processed.append(dep)
         label = deposit_label_for(reference)
         print(f"\n--- {label} (discovered via GET /deposits) ---")
-        process_deposit(dep, accounts, invoices)
+        outcome = process_deposit(dep, accounts, invoices)
         spine.print_ledger(invoices)
-        snapshots.append(snapshot(label, invoices))
+        dep_card = deposit_card_info(dep, accounts, reference, outcome)
+        snapshots.append(snapshot(label, invoices, deposit=dep_card))
 
     return processed
 
 
-def snapshot(step, invoices):
+def snapshot(step, invoices, deposit=None):
     return {
         "step": step,
         "description": STEP_DESCRIPTIONS.get(step, ""),
+        "deposit": deposit,
         "ledger": [
             {"id": inv["id"], "customer": inv["customer"], "amount": inv["amount"],
              "status": inv["status"], "note": inv.get("note", "")}
@@ -246,6 +274,10 @@ def write_outputs(snapshots):
 
 
 def main():
+    print("=" * 70)
+    print("LANDFALL — rules-only counterfactual (no model)")
+    print("=" * 70)
+
     client = AwxClient()
     client.login()
     print("Authenticated.")

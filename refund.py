@@ -38,7 +38,7 @@ from awx_client import AwxClient
 STATE_PATH = os.path.join(os.path.dirname(__file__), "state.json")
 
 # Fixture data for the one counterparty this demo ever refunds - this is
-# fine to be static: it's who Cafe Brule's bank account belongs to, not a
+# fine to be static: it's who Café Brûlé's bank account belongs to, not a
 # decision about which invoice or how much (that's the `invoice` argument
 # to approval_record(), always sourced from the live ledger).
 CURRENCY = "USD"
@@ -54,7 +54,7 @@ BENEFICIARY = {
     "entity_type": "COMPANY",
     "bank_details": {
         "account_currency": "USD",
-        "account_name": "Cafe Brule SARL",
+        "account_name": "Café Brûlé SARL",
         "account_number": "5563012487",
         "account_routing_type1": "aba",
         "account_routing_value1": "026073150",
@@ -218,7 +218,7 @@ def main():
     own without running the whole demo first."""
     print("Standalone test run - using a fixture invoice, not a live ledger result.\n")
     fixture_invoice = {
-        "id": "INV-106", "customer": "Cafe Brule", "amount": Decimal("1800.00"),
+        "id": "INV-106", "customer": "Café Brûlé", "amount": Decimal("1800.00"),
         "refund_due": Decimal("150.00"), "closing_deposit_amount": Decimal("1950.00"),
     }
 

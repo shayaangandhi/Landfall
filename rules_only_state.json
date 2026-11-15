@@ -3,24 +3,34 @@
     {
       "step": "D1",
       "description": "Northgate deposit lands, $12.85 short - within tolerance band, auto-closed.",
+      "deposit": {
+        "amount": "3187.15",
+        "currency": "USD",
+        "payer": "NORTHGATE COFFEE",
+        "reference": "NORTHGATE/INV112",
+        "account_customer": "Northgate",
+        "account_id": "e4254737-f62e-4821-9f76-f3e640f033cb",
+        "account_id_last5": "033cb",
+        "outcome": "INV-112 - $12.85 off, within the $64.00 tolerance band"
+      },
       "ledger": [
         {
           "id": "INV-104",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "5000.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-106",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "1800.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-108",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "2350.00",
           "status": "OPEN",
           "note": ""
@@ -39,24 +49,34 @@
     {
       "step": "D2",
       "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - tolerance band closes INV-108.",
+      "deposit": {
+        "amount": "2310.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "BRULE/INV1",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
+        "account_id_last5": "2ee18",
+        "outcome": "INV-108 - $40.00 off, within the $50.00 tolerance band"
+      },
       "ledger": [
         {
           "id": "INV-104",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "5000.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-106",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "1800.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-108",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "2350.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
@@ -75,24 +95,34 @@
     {
       "step": "D3",
       "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
+      "deposit": {
+        "amount": "1950.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "INV106",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
+        "account_id_last5": "2ee18",
+        "outcome": "INV-106 - overpaid $150.00"
+      },
       "ledger": [
         {
           "id": "INV-104",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "5000.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-106",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "1800.00",
           "status": "CLOSED",
           "note": "auto-closed, overpaid $150.00 - refund pending"
         },
         {
           "id": "INV-108",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "2350.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
@@ -111,24 +141,34 @@
     {
       "step": "D4",
       "description": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.",
+      "deposit": {
+        "amount": "2690.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "BRULE/INV104 FINAL",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
+        "account_id_last5": "2ee18",
+        "outcome": "no candidate within tolerance among (INV-104) - no model available, flagging for a human"
+      },
       "ledger": [
         {
           "id": "INV-104",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "5000.00",
           "status": "OPEN",
           "note": ""
         },
         {
           "id": "INV-106",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "1800.00",
           "status": "CLOSED",
           "note": "auto-closed, overpaid $150.00 - refund pending"
         },
         {
           "id": "INV-108",
-          "customer": "Cafe Brule",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
           "amount": "2350.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Reconciliation Agent — Demo</title>
+<title>Landfall — Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
@@ -232,6 +232,53 @@
 
   /* ---- refund panel ------------------------------------------------ */
 
+  .deposit-card {
+    background: var(--bg-panel);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 32px;
+    margin-bottom: 28px;
+  }
+
+  .deposit-card .header {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .deposit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 14px;
+  }
+
+  .deposit-stat .k {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .deposit-stat .v {
+    font-size: 17px;
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+
+  .deposit-card .outcome {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
   .refund-panel {
     background: var(--bg-panel);
     border: 3px solid var(--closed);
@@ -381,7 +428,7 @@
 
 <div class="shell">
   <div class="topbar">
-    <h1>Ravenswood Roasters · Reconciliation Agent</h1>
+    <h1>Landfall · Ravenswood Roasters</h1>
     <div class="mode-toggle" id="mode-toggle">
       <button id="mode-agent" class="active">Agent judgment</button>
       <button id="mode-rules">Rules-only</button>
@@ -389,6 +436,7 @@
     <div class="step-label" id="step-label"></div>
   </div>
 
+  <div id="deposit-area"></div>
   <div id="ledger" class="ledger"></div>
   <div id="escalation-area"></div>
   <div id="refund-area"></div>
@@ -502,10 +550,46 @@
     const el = document.getElementById("escalation-area");
     const cards = snap.escalations || [];
     if (!cards.length) {
-      el.innerHTML = `<div class="no-escalation">No open escalation at this step.</div>`;
+      // Collapse entirely rather than render a placeholder box - most
+      // steps have no open escalation, and a dashed box every time reads
+      // as a missing feature, not an absence of one.
+      el.innerHTML = "";
       return;
     }
     el.innerHTML = cards.map(renderEscalationCard).join("");
+  }
+
+  function renderDepositArea(snap) {
+    const el = document.getElementById("deposit-area");
+    const d = snap.deposit;
+    if (!d) { el.innerHTML = ""; return; }
+    const acctLabel = d.account_customer
+      ? `${d.account_customer} · …${d.account_id_last5 || "?????"}`
+      : "unknown account";
+    el.innerHTML = `
+      <div class="deposit-card">
+        <div class="header">Deposit landed</div>
+        <div class="deposit-grid">
+          <div class="deposit-stat">
+            <div class="k">Amount</div>
+            <div class="v">${fmtMoney(d.amount, d.currency)}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Payer</div>
+            <div class="v">${d.payer || "—"}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Landed in</div>
+            <div class="v">${acctLabel}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Reference</div>
+            <div class="v">${d.reference || "—"}</div>
+          </div>
+        </div>
+        <div class="outcome">${d.outcome || ""}</div>
+      </div>
+    `;
   }
 
   function renderRefundArea(snap) {
@@ -555,6 +639,7 @@
   function render() {
     const snap = SNAPSHOTS[current];
     document.getElementById("step-label").innerHTML = `Step <strong>${snap.step}</strong> — ${snap.description || ""}`;
+    renderDepositArea(snap);
     renderLedger(snap);
     renderEscalationArea(snap);
     renderRefundArea(snap);

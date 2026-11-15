@@ -32,7 +32,7 @@ EMAIL_NO_HOLD = (
 
 DEPOSIT_D2 = {
     "amount": Decimal("2310.00"), "currency": "USD",
-    "payer_name": "CAFE BRULE", "reference": "BRULE/INV1",
+    "payer_name": "CAFÉ BRÛLÉ", "reference": "BRULE/INV1",
 }
 
 CANDIDATES_3 = [
@@ -126,8 +126,8 @@ def test_a4_fallback_is_scoped_not_universal():
 
     # Case 1: a second deposit DOES reconcile the invoice exactly (D4 in the
     # real demo). The combined-sum rule fires without the model's input.
-    invoices = [dict(c, customer="Cafe Brule") for c in CANDIDATES_3]
-    rec = {"amount": Decimal("2310.00"), "currency": "USD", "counterparty": "Cafe Brule",
+    invoices = [dict(c, customer="Café Brûlé") for c in CANDIDATES_3]
+    rec = {"amount": Decimal("2310.00"), "currency": "USD", "counterparty": "Café Brûlé",
            "candidates_considered": ["INV-104", "INV-108"], "status": "OPEN",
            "deposit_id": "dep-2", "label": "D2"}
     inv104 = next(i for i in invoices if i["id"] == "INV-104")

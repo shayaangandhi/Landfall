@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Reconciliation Agent — Demo</title>
+<title>Landfall — Demo</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
@@ -232,6 +232,53 @@
 
   /* ---- refund panel ------------------------------------------------ */
 
+  .deposit-card {
+    background: var(--bg-panel);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 32px;
+    margin-bottom: 28px;
+  }
+
+  .deposit-card .header {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  .deposit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 14px;
+  }
+
+  .deposit-stat .k {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .deposit-stat .v {
+    font-size: 17px;
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+
+  .deposit-card .outcome {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
   .refund-panel {
     background: var(--bg-panel);
     border: 3px solid var(--closed);
@@ -381,7 +428,7 @@
 
 <div class="shell">
   <div class="topbar">
-    <h1>Ravenswood Roasters · Reconciliation Agent</h1>
+    <h1>Landfall · Ravenswood Roasters</h1>
     <div class="mode-toggle" id="mode-toggle">
       <button id="mode-agent" class="active">Agent judgment</button>
       <button id="mode-rules">Rules-only</button>
@@ -389,6 +436,7 @@
     <div class="step-label" id="step-label"></div>
   </div>
 
+  <div id="deposit-area"></div>
   <div id="ledger" class="ledger"></div>
   <div id="escalation-area"></div>
   <div id="refund-area"></div>
@@ -402,8 +450,8 @@
 </div>
 
 <script>
-  const SNAPSHOTS_AGENT = [{"step": "D1", "description": "Northgate deposit lands, $12.85 short - fee variance, auto-closed in code.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": null}, {"step": "D2", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - ambiguous, escalated.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [{"deposit_label": "D2", "amount": "2310.0", "currency": "USD", "counterparty": "Cafe Brule", "proposed": "Partial payment toward INV-104", "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held, not being paid.", "supporting": ["Email: \"Paying INV-106 in full and starting on INV-104 this week.\""], "unproven": "Reference 'INV1' and amount don't cleanly match any single invoice.", "confidence": "medium", "related_invoice_ids": ["INV-104", "INV-108"]}], "refund": null}, {"step": "D3", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund pending (not yet executed)"}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [{"deposit_label": "D2", "amount": "2310.0", "currency": "USD", "counterparty": "Cafe Brule", "proposed": "Partial payment against INV-104", "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108 over a disputed line.", "supporting": ["Email: \"starting on INV-104 this week\"", "INV-106 closed by deposit D3 earlier in this run."], "unproven": "Deposit doesn't match INV-104 or INV-106 amounts exactly", "confidence": "low", "related_invoice_ids": ["INV-104", "INV-108"]}], "refund": null}, {"step": "D4", "description": "A fourth deposit confirms D2 was a partial payment - INV-104 closes, escalation withdrawn.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "CLOSED", "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund pending (not yet executed)"}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": null}, {"step": "REFUND", "description": "The $150 overpayment on INV-106 is refunded.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "CLOSED", "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund EXECUTED (transfer 1769c54b-3271-4688-9669-44b013a0b81e, PAID)"}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": {"invoice_id": "INV-106", "amount": "150.00", "currency": "USD", "transfer_id": "1769c54b-3271-4688-9669-44b013a0b81e", "status": "PAID", "duplicate_attempt": {"rejected": true, "code": "duplicate_request_id"}}}];
-  const SNAPSHOTS_RULES_ONLY = [{"step": "D1", "description": "Northgate deposit lands, $12.85 short - within tolerance band, auto-closed.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D2", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - tolerance band closes INV-108.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D3", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "CLOSED", "note": "auto-closed, overpaid $150.00 - refund pending"}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D4", "description": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.", "ledger": [{"id": "INV-104", "customer": "Cafe Brule", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Cafe Brule", "amount": "1800.00", "status": "CLOSED", "note": "auto-closed, overpaid $150.00 - refund pending"}, {"id": "INV-108", "customer": "Cafe Brule", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}];
+  const SNAPSHOTS_AGENT = [{"step": "D1", "description": "Northgate deposit lands, $12.85 short - fee variance, auto-closed in code.", "deposit": {"amount": "3187.15", "currency": "USD", "payer": "NORTHGATE COFFEE", "reference": "NORTHGATE/INV112", "account_customer": "Northgate", "account_id": "2cf6c53f-097f-403b-a966-d54eeedf5804", "account_id_last5": "f5804", "outcome": "INV-112 - deposit $3187.15 vs invoice $3200.00, diff $-12.85 within tolerance"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": null}, {"step": "D2", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - ambiguous, escalated.", "deposit": {"amount": "2310.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "BRULE/INV1", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "f4c8372b-832d-4aad-8be0-ba0840812699", "account_id_last5": "12699", "outcome": "Ambiguous - escalated: Partial payment starting INV-104 (advisory, needs a person)"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [{"deposit_label": "D2", "amount": "2310.0", "currency": "USD", "counterparty": "Caf\u00e9 Br\u00fbl\u00e9", "proposed": "Partial payment starting INV-104", "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held.", "supporting": ["Email: \"Paying INV-106 in full and starting on INV-104 this week.\""], "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly", "confidence": "medium", "related_invoice_ids": ["INV-104", "INV-108"]}], "refund": null}, {"step": "D3", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.", "deposit": {"amount": "1950.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "INV106", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "f4c8372b-832d-4aad-8be0-ba0840812699", "account_id_last5": "12699", "outcome": "INV-106 - overpaid by $150.00"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund pending (not yet executed)"}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [{"deposit_label": "D2", "amount": "2310.0", "currency": "USD", "counterparty": "Caf\u00e9 Br\u00fbl\u00e9", "proposed": "Partial payment starting INV-104", "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.", "supporting": ["Email: \"starting on INV-104 this week\"", "INV-106 closed by deposit D3 earlier in this run."], "unproven": "Reference 'BRULE/INV1' is truncated, not exact amount match", "confidence": "medium", "related_invoice_ids": ["INV-104", "INV-108"]}], "refund": null}, {"step": "D4", "description": "A fourth deposit confirms D2 was a partial payment - INV-104 closes, escalation withdrawn.", "deposit": {"amount": "2690.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "BRULE/INV104 FINAL", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "f4c8372b-832d-4aad-8be0-ba0840812699", "account_id_last5": "12699", "outcome": "Confirms D2's partial payment - closes INV-104 ($2310.00 + $2690.00 = $5000.00), withdraws escalation"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "CLOSED", "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund pending (not yet executed)"}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": null}, {"step": "REFUND", "description": "The $150 overpayment on INV-106 is refunded.", "deposit": null, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "CLOSED", "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "CLOSED", "note": "overpaid by $150.00 - refund EXECUTED (transfer 1769c54b-3271-4688-9669-44b013a0b81e, PAID)"}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed, $12.85 fee variance"}], "escalations": [], "refund": {"invoice_id": "INV-106", "amount": "150.00", "currency": "USD", "transfer_id": "1769c54b-3271-4688-9669-44b013a0b81e", "status": "PAID", "duplicate_attempt": {"rejected": true, "code": "duplicate_request_id"}}}];
+  const SNAPSHOTS_RULES_ONLY = [{"step": "D1", "description": "Northgate deposit lands, $12.85 short - within tolerance band, auto-closed.", "deposit": {"amount": "3187.15", "currency": "USD", "payer": "NORTHGATE COFFEE", "reference": "NORTHGATE/INV112", "account_customer": "Northgate", "account_id": "e4254737-f62e-4821-9f76-f3e640f033cb", "account_id_last5": "033cb", "outcome": "INV-112 - $12.85 off, within the $64.00 tolerance band"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "OPEN", "note": ""}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D2", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - tolerance band closes INV-108.", "deposit": {"amount": "2310.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "BRULE/INV1", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18", "account_id_last5": "2ee18", "outcome": "INV-108 - $40.00 off, within the $50.00 tolerance band"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "OPEN", "note": ""}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D3", "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.", "deposit": {"amount": "1950.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "INV106", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18", "account_id_last5": "2ee18", "outcome": "INV-106 - overpaid $150.00"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "CLOSED", "note": "auto-closed, overpaid $150.00 - refund pending"}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}, {"step": "D4", "description": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.", "deposit": {"amount": "2690.0", "currency": "USD", "payer": "CAF\u00c9 BR\u00dbL\u00c9", "reference": "BRULE/INV104 FINAL", "account_customer": "Caf\u00e9 Br\u00fbl\u00e9", "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18", "account_id_last5": "2ee18", "outcome": "no candidate within tolerance among (INV-104) - no model available, flagging for a human"}, "ledger": [{"id": "INV-104", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "5000.00", "status": "OPEN", "note": ""}, {"id": "INV-106", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "1800.00", "status": "CLOSED", "note": "auto-closed, overpaid $150.00 - refund pending"}, {"id": "INV-108", "customer": "Caf\u00e9 Br\u00fbl\u00e9", "amount": "2350.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"}, {"id": "INV-112", "customer": "Northgate", "amount": "3200.00", "status": "CLOSED", "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"}], "escalations": [], "refund": null}];
 
   let mode = "agent";
   let SNAPSHOTS = SNAPSHOTS_AGENT.length ? SNAPSHOTS_AGENT : SNAPSHOTS_RULES_ONLY;
@@ -502,10 +550,46 @@
     const el = document.getElementById("escalation-area");
     const cards = snap.escalations || [];
     if (!cards.length) {
-      el.innerHTML = `<div class="no-escalation">No open escalation at this step.</div>`;
+      // Collapse entirely rather than render a placeholder box - most
+      // steps have no open escalation, and a dashed box every time reads
+      // as a missing feature, not an absence of one.
+      el.innerHTML = "";
       return;
     }
     el.innerHTML = cards.map(renderEscalationCard).join("");
+  }
+
+  function renderDepositArea(snap) {
+    const el = document.getElementById("deposit-area");
+    const d = snap.deposit;
+    if (!d) { el.innerHTML = ""; return; }
+    const acctLabel = d.account_customer
+      ? `${d.account_customer} · …${d.account_id_last5 || "?????"}`
+      : "unknown account";
+    el.innerHTML = `
+      <div class="deposit-card">
+        <div class="header">Deposit landed</div>
+        <div class="deposit-grid">
+          <div class="deposit-stat">
+            <div class="k">Amount</div>
+            <div class="v">${fmtMoney(d.amount, d.currency)}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Payer</div>
+            <div class="v">${d.payer || "—"}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Landed in</div>
+            <div class="v">${acctLabel}</div>
+          </div>
+          <div class="deposit-stat">
+            <div class="k">Reference</div>
+            <div class="v">${d.reference || "—"}</div>
+          </div>
+        </div>
+        <div class="outcome">${d.outcome || ""}</div>
+      </div>
+    `;
   }
 
   function renderRefundArea(snap) {
@@ -555,6 +639,7 @@
   function render() {
     const snap = SNAPSHOTS[current];
     document.getElementById("step-label").innerHTML = `Step <strong>${snap.step}</strong> — ${snap.description || ""}`;
+    renderDepositArea(snap);
     renderLedger(snap);
     renderEscalationArea(snap);
     renderRefundArea(snap);

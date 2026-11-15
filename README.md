@@ -1,4 +1,6 @@
-# Reconciliation agent — Airwallex Agentic Banking Hackathon
+# Landfall — Airwallex Agentic Banking Hackathon
+
+A reconciliation agent: money lands, and Landfall works out what it was for.
 
 A small Chicago coffee roaster, Ravenswood Roasters, sells wholesale to cafés
 abroad. Money arrives that never matches the invoices: fees come out in
@@ -145,11 +147,23 @@ then this, to see both). Uses its own Global Accounts
 - `agent_cache.json` (a response cache for a recorded take, in case the
   model's live output ever proves unstable at camera time) is not currently
   in use — `determinism_check.py` found live calls stable.
-- The code-only "combined deposits reconcile an invoice" rule (the D4 step)
-  resolves an ambiguous case without re-consulting the model when a later
-  deposit happens to confirm the earlier one exactly. `tests.py` shows this
-  fallback only fires on an exact reconciliation, not universally — a
-  non-reconciling second deposit leaves the escalation open, dependent on
-  the model's card. See `docs/judge-audit.md` A4 for the full discussion;
-  this is reported there as a literal FAIL against that check's test, with
-  the scoping evidence as mitigation, not an argument that it isn't one.
+- **A4, corrected.** The original finding was: the D4 step's combined-sum
+  close (`run_demo.py::try_combined_close`) never reads
+  `rec["model_recommendation"]` when it closes INV-104, so removing the
+  Anthropic call shouldn't change this run's end state. That mechanical
+  claim is still true in isolation - but running the actual counterfactual
+  (`rules_only.py`) disproves the conclusion drawn from it. Without the
+  model, D2 never survives long enough to reach the D4 step at all: a
+  conventional tolerance-band rule consumes it immediately, closing
+  INV-108 (the disputed invoice) because $2,310 looks close enough to
+  $2,350. By the time D4 lands, there is no open escalation left to
+  combine it with, so D4 goes unresolved too, and INV-104 - genuinely paid
+  in full across D2 and D4 - is left looking untouched and unpaid.
+  The model changes the end state, just not at the step A4 originally
+  pointed at: its judgment is what keeps D2 alive as an open, uncommitted
+  candidate instead of letting a tidy-looking number close it early. D4's
+  arithmetic only ever gets something correct to confirm because the model
+  declined to let code mis-resolve D2 first. Run both modes
+  (`python3 run_demo.py` then `python3 run_demo.py --rules-only`) and
+  compare the two end states directly - that comparison is the actual
+  evidence, not this paragraph.

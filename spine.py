@@ -25,25 +25,25 @@ from config import FEE_TOLERANCE  # noqa: F401 - re-exported as spine.FEE_TOLERA
 STATE_PATH = os.path.join(os.path.dirname(__file__), "state.json")
 
 DEMO_ACCOUNTS = {
-    "Cafe Brule": {"country_code": "US", "currency": "USD"},
+    "Café Brûlé": {"country_code": "US", "currency": "USD"},
     "Northgate": {"country_code": "US", "currency": "USD"},
 }
 
 # Amounts are Decimal, built from strings - never a float literal
 # (docs/judge-audit.md B1). Money is never binary floating point here.
 INVOICES = [
-    {"id": "INV-104", "customer": "Cafe Brule", "amount": Decimal("5000.00")},
-    {"id": "INV-106", "customer": "Cafe Brule", "amount": Decimal("1800.00")},
-    {"id": "INV-108", "customer": "Cafe Brule", "amount": Decimal("2350.00")},
+    {"id": "INV-104", "customer": "Café Brûlé", "amount": Decimal("5000.00")},
+    {"id": "INV-106", "customer": "Café Brûlé", "amount": Decimal("1800.00")},
+    {"id": "INV-108", "customer": "Café Brûlé", "amount": Decimal("2350.00")},
     {"id": "INV-112", "customer": "Northgate", "amount": Decimal("3200.00")},
 ]
 
 DEPOSITS_TO_LAND = [
     {"customer": "Northgate", "amount": "3187.15", "payer_name": "NORTHGATE COFFEE",
      "reference": "NORTHGATE/INV112"},
-    {"customer": "Cafe Brule", "amount": "2310.00", "payer_name": "CAFE BRULE",
+    {"customer": "Café Brûlé", "amount": "2310.00", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "BRULE/INV1"},
-    {"customer": "Cafe Brule", "amount": "1950.00", "payer_name": "CAFE BRULE",
+    {"customer": "Café Brûlé", "amount": "1950.00", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "INV106"},
 ]
 

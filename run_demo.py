@@ -46,7 +46,7 @@ EMAIL_TEXT = (
     "starting on INV-104 this week."
 )
 
-D4 = {"customer": "Cafe Brule", "amount": "2690.00", "payer_name": "CAFE BRULE",
+D4 = {"customer": "Café Brûlé", "amount": "2690.00", "payer_name": "CAFÉ BRÛLÉ",
       "reference": "BRULE/INV104 FINAL"}
 
 # Deposit labels and processing order - matched by reference since each is
@@ -242,20 +242,23 @@ def try_combined_close(inv, amount, customer, label, escalations, dep_id):
                 "note": f"${rec['amount']:.2f} + ${amount:.2f} = ${combined:.2f} "
                         f"matches {inv['id']} (${inv['amount']:.2f}) within tolerance",
             }
+            outcome = (f"Confirms {rec['label']}'s partial payment - closes {inv['id']} "
+                       f"(${rec['amount']:.2f} + ${amount:.2f} = ${combined:.2f}), withdraws escalation")
             print(f"  [WITHDRAW ESCALATION + AUTO-CLOSE] {inv['id']} ({customer}) - "
                   f"{label} confirms {rec['label']} was a partial payment on {inv['id']}.")
             print(f"    ${rec['amount']:.2f} ({rec['label']}) + ${amount:.2f} ({label}) = "
                   f"${combined:.2f} ≈ {inv['id']} (${inv['amount']:.2f}). "
                   f"Recalculated in code, not re-judged.")
             print(f"    escalation for deposit {rec['deposit_id']} is now WITHDRAWN.")
-            return True
-    return False
+            return True, outcome
+    return False, None
 
 
 def process_deposit(dep, accounts, invoices, escalations):
     """The one path every deposit goes through - D1, D2, D3, D4, or any
     deposit this run discovers. Nothing here is specific to which deposit
-    this is (docs/judge-audit.md A3)."""
+    this is (docs/judge-audit.md A3). Returns a one-line outcome string
+    for the deposit card (view_template.html)."""
     customer = spine.account_customer(accounts, dep.get("global_account_id"))
     amount = dep.get("amount")  # already Decimal - parse_float=Decimal in awx_client
     reference = dep.get("reference") or ""
@@ -263,35 +266,46 @@ def process_deposit(dep, accounts, invoices, escalations):
     digits = spine.match_reference(reference)
 
     if not digits:
+        outcome = "No invoice number in the reference - skipped"
         print(f"  [SKIP] {customer} ${amount:.2f} ref={reference!r} - no invoice number in reference")
-        return
+        return outcome
 
     candidates = spine.candidates_for(invoices, customer, digits)
 
     if not candidates:
+        outcome = f"No open invoice matches digits {digits!r} - skipped"
         print(f"  [SKIP] {customer} ${amount:.2f} ref={reference!r} - no open invoice matches digits {digits!r}")
-        return
+        return outcome
 
     if len(candidates) > 1:
         escalations[dep.get("id")] = ask_agent_and_record(dep, customer, candidates)
         for rec in escalations.values():
             reevaluate_single_escalation(rec, invoices)
-        return
+        rec = escalations[dep.get("id")]
+        if rec.get("card_fields"):
+            return f"Ambiguous - escalated: {rec['card_fields']['proposed']} (advisory, needs a person)"
+        return "Ambiguous - escalated, no accepted proposal"
 
     inv = candidates[0]
     action, message = spine.resolve_single(inv, amount)
 
-    if action == "outside_tolerance" and try_combined_close(
-        inv, amount, customer, label, escalations, dep.get("id")
-    ):
-        pass
+    combined_ok, combined_outcome = (
+        try_combined_close(inv, amount, customer, label, escalations, dep.get("id"))
+        if action == "outside_tolerance" else (False, None)
+    )
+
+    if combined_ok:
+        outcome = combined_outcome
     else:
         if inv["status"] == "CLOSED":
             inv["closed_by_label"] = label
+        outcome = message.split("] ", 1)[-1]  # drop the [TAG] prefix, keep the rest
         print(f"  {message} ({customer})")
 
     for rec in escalations.values():
         reevaluate_single_escalation(rec, invoices)
+
+    return outcome
 
 
 def poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots,
@@ -342,11 +356,31 @@ def poll_and_process(client, accounts, invoices, escalations, run_start, seen_id
         processed.append(dep)
         label = deposit_label_for(reference)
         print(f"\n--- {label} (discovered via GET /deposits) ---")
-        process_deposit(dep, accounts, invoices, escalations)
+        outcome = process_deposit(dep, accounts, invoices, escalations)
         spine.print_ledger(invoices)
-        snapshots.append(snapshot(label, invoices, escalations))
+        dep_card = deposit_card_info(dep, accounts, reference, outcome)
+        snapshots.append(snapshot(label, invoices, escalations, deposit=dep_card))
 
     return processed
+
+
+def deposit_card_info(dep, accounts, reference, outcome):
+    """The per-customer account is the project's actual novelty and
+    previously appeared nowhere on screen - this is what the deposit card
+    (view_template.html) renders at the top of each step."""
+    customer = spine.account_customer(accounts, dep.get("global_account_id"))
+    acct = accounts.get(customer, {})
+    acct_id = acct.get("id", "")
+    return {
+        "amount": dep.get("amount"),
+        "currency": dep.get("currency", "USD"),
+        "payer": payer_name_of(dep),
+        "reference": reference,
+        "account_customer": customer,
+        "account_id": acct_id,
+        "account_id_last5": acct_id[-5:] if acct_id else "",
+        "outcome": outcome,
+    }
 
 
 def invoices_needing_refund(invoices):
@@ -403,10 +437,11 @@ def execute_refund_step(client, invoice):
     }
 
 
-def snapshot(step, invoices, escalations, refund_result=None):
+def snapshot(step, invoices, escalations, refund_result=None, deposit=None):
     return {
         "step": step,
         "description": STEP_DESCRIPTIONS.get(step, ""),
+        "deposit": deposit,
         "ledger": [
             {"id": inv["id"], "customer": inv["customer"], "amount": inv["amount"],
              "status": inv["status"], "note": inv.get("note", "")}
@@ -450,6 +485,10 @@ def write_outputs(snapshots):
 
 
 def main():
+    print("=" * 70)
+    print("LANDFALL — Ravenswood Roasters reconciliation agent")
+    print("=" * 70)
+
     client = AwxClient()
     client.login()
     print("Authenticated.")

@@ -21,7 +21,7 @@ EMAIL = (
 
 DEPOSIT_D2 = {
     "amount": Decimal("2310.00"), "currency": "USD",
-    "payer_name": "CAFE BRULE", "reference": "BRULE/INV1",
+    "payer_name": "CAFÉ BRÛLÉ", "reference": "BRULE/INV1",
 }
 
 CANDIDATES_3 = [
