@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reconciliation Agent — Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-panel: #11161d;
+    --bg-panel-raised: #161c25;
+    --text: #f3f5f7;
+    --text-dim: #b7c0cc;
+    --border: #2a323d;
+    --closed: #3ddc84;
+    --closed-bg: #103321;
+    --open-escalation: #ffb545;
+    --open-escalation-bg: #332507;
+    --open-plain: #e7ebef;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shell {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 36px 40px 100px;
+    flex: 1;
+  }
+
+  /* ---- header / step control ---------------------------------- */
+
+  .topbar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 36px;
+    gap: 24px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .step-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .step-label strong {
+    color: var(--text);
+    font-size: 17px;
+  }
+
+  /* ---- invoice ledger ------------------------------------------- */
+
+  .ledger {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+
+  .invoice-row {
+    display: grid;
+    grid-template-columns: 110px 150px 140px 150px 1fr;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 24px;
+    border-radius: 10px;
+    background: var(--bg-panel);
+    border: 2px solid var(--border);
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .invoice-row .id {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .invoice-row .customer {
+    font-size: 17px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .invoice-row .amount {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .invoice-row .status {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    text-align: center;
+    justify-self: start;
+  }
+
+  .invoice-row .note {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .invoice-row.status-closed {
+    border-color: var(--closed);
+  }
+  .invoice-row.status-closed .status {
+    background: var(--closed-bg);
+    color: var(--closed);
+  }
+
+  .invoice-row.status-escalated {
+    border-color: var(--open-escalation);
+  }
+  .invoice-row.status-escalated .status {
+    background: var(--open-escalation-bg);
+    color: var(--open-escalation);
+  }
+
+  .invoice-row.status-open {
+    border-color: var(--border);
+  }
+  .invoice-row.status-open .status {
+    background: #1c232c;
+    color: var(--open-plain);
+  }
+
+  /* ---- escalation card -------------------------------------------- */
+
+  .escalation-card {
+    background: linear-gradient(180deg, var(--bg-panel-raised), var(--bg-panel));
+    border: 3px solid var(--open-escalation);
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 0 0 1px rgba(255, 181, 69, 0.15), 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .escalation-card .header {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--open-escalation);
+    margin-bottom: 6px;
+  }
+
+  .escalation-card .headline {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    font-family: var(--mono);
+  }
+
+  .card-field {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 20px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .card-field:first-of-type {
+    border-top: none;
+  }
+
+  .card-field .label {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-top: 2px;
+  }
+
+  .card-field .value {
+    font-size: 21px;
+    line-height: 1.45;
+    font-weight: 600;
+  }
+
+  .card-field .value .sub {
+    display: block;
+    font-size: 17px;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-top: 6px;
+  }
+
+  .card-field.confidence .value {
+    font-weight: 800;
+  }
+  .card-field.confidence .value.low { color: var(--open-escalation); }
+  .card-field.confidence .value.medium { color: #ffd480; }
+  .card-field.confidence .value.high { color: var(--closed); }
+
+  .no-escalation {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+    font-size: 18px;
+    font-weight: 600;
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    margin-bottom: 40px;
+  }
+
+  /* ---- refund panel ------------------------------------------------ */
+
+  .refund-panel {
+    background: var(--bg-panel);
+    border: 3px solid var(--closed);
+    border-radius: 16px;
+    padding: 32px 40px;
+    margin-bottom: 40px;
+  }
+
+  .refund-panel .header {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--closed);
+    margin-bottom: 20px;
+  }
+
+  .refund-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .refund-stat .k {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .refund-stat .v {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: var(--mono);
+  }
+
+  .refund-stat .v.status-pill {
+    display: inline-block;
+    color: var(--closed);
+    background: var(--closed-bg);
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-family: var(--sans);
+  }
+
+  .refund-stat .v.rejected {
+    color: var(--closed);
+  }
+
+  /* ---- step control -------------------------------------------- */
+
+  .stepper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 14, 20, 0.95);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+
+  .stepper button {
+    background: var(--bg-panel-raised);
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 28px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--sans);
+  }
+
+  .stepper button:hover:not(:disabled) {
+    border-color: var(--text-dim);
+  }
+
+  .stepper button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .stepper .dots {
+    display: flex;
+    gap: 10px;
+  }
+
+  .stepper .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+  }
+
+  .stepper .dot.active {
+    background: var(--open-escalation);
+    transform: scale(1.3);
+  }
+
+  .stepper .counter {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 700;
+    min-width: 70px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="topbar">
+    <h1>Ravenswood Roasters · Reconciliation Agent</h1>
+    <div class="step-label" id="step-label"></div>
+  </div>
+
+  <div id="ledger" class="ledger"></div>
+  <div id="escalation-area"></div>
+  <div id="refund-area"></div>
+</div>
+
+<div class="stepper">
+  <button id="prev">&larr; Prev</button>
+  <div class="dots" id="dots"></div>
+  <div class="counter" id="counter"></div>
+  <button id="next">Next &rarr;</button>
+</div>
+
+<script>
+  const SNAPSHOTS = /*__SNAPSHOTS_JSON__*/[];
+
+  let current = 0;
+
+  function fmtMoney(n, currency) {
+    return "$" + Number(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + (currency || "USD");
+  }
+
+  function statusClass(inv, escalatedIds) {
+    if (inv.status === "CLOSED") return "status-closed";
+    if (escalatedIds.has(inv.id)) return "status-escalated";
+    return "status-open";
+  }
+
+  function statusText(inv, escalatedIds) {
+    if (inv.status === "CLOSED") return "Closed";
+    if (escalatedIds.has(inv.id)) return "Escalated";
+    return "Open";
+  }
+
+  function renderLedger(snap) {
+    const escalatedIds = new Set();
+    (snap.escalations || []).forEach(card => {
+      (card.related_invoice_ids || []).forEach(id => escalatedIds.add(id));
+    });
+
+    const el = document.getElementById("ledger");
+    el.innerHTML = "";
+    snap.ledger.forEach(inv => {
+      const row = document.createElement("div");
+      row.className = "invoice-row " + statusClass(inv, escalatedIds);
+      row.innerHTML = `
+        <div class="id">${inv.id}</div>
+        <div class="customer">${inv.customer}</div>
+        <div class="amount">${fmtMoney(inv.amount, "USD")}</div>
+        <div class="status">${statusText(inv, escalatedIds)}</div>
+        <div class="note">${inv.note || ""}</div>
+      `;
+      el.appendChild(row);
+    });
+  }
+
+  function confClass(level) {
+    return (level || "unknown").toLowerCase();
+  }
+
+  function renderEscalationCard(card) {
+    const supporting = (card.supporting || []).map(s => `<span class="sub">${s}</span>`).join("");
+    return `
+      <div class="escalation-card">
+        <div class="header">Escalation</div>
+        <div class="headline">Deposit ${card.deposit_label} · ${fmtMoney(card.amount, card.currency)} · ${card.counterparty}</div>
+
+        <div class="card-field">
+          <div class="label">Proposed</div>
+          <div class="value">${card.proposed}</div>
+        </div>
+
+        ${card.rejected ? `
+        <div class="card-field">
+          <div class="label">Rejected</div>
+          <div class="value">${card.rejected}</div>
+        </div>` : ""}
+
+        ${card.supporting && card.supporting.length ? `
+        <div class="card-field">
+          <div class="label">Supporting</div>
+          <div class="value">${supporting}</div>
+        </div>` : ""}
+
+        ${card.unproven ? `
+        <div class="card-field">
+          <div class="label">Unproven</div>
+          <div class="value">${card.unproven}</div>
+        </div>` : ""}
+
+        <div class="card-field confidence">
+          <div class="label">Confidence</div>
+          <div class="value ${confClass(card.confidence)}">${(card.confidence || "unknown").replace(/^./, c => c.toUpperCase())} — needs a person.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEscalationArea(snap) {
+    const el = document.getElementById("escalation-area");
+    const cards = snap.escalations || [];
+    if (!cards.length) {
+      el.innerHTML = `<div class="no-escalation">No open escalation at this step.</div>`;
+      return;
+    }
+    el.innerHTML = cards.map(renderEscalationCard).join("");
+  }
+
+  function renderRefundArea(snap) {
+    const el = document.getElementById("refund-area");
+    const r = snap.refund;
+    if (!r) { el.innerHTML = ""; return; }
+    el.innerHTML = `
+      <div class="refund-panel">
+        <div class="header">Refund executed · ${r.invoice_id}</div>
+        <div class="refund-grid">
+          <div class="refund-stat">
+            <div class="k">Transfer ID</div>
+            <div class="v">${r.transfer_id}</div>
+          </div>
+          <div class="refund-stat">
+            <div class="k">Status</div>
+            <div class="v status-pill">${r.status}</div>
+          </div>
+          <div class="refund-stat">
+            <div class="k">Amount</div>
+            <div class="v">${fmtMoney(r.amount, r.currency)}</div>
+          </div>
+          <div class="refund-stat">
+            <div class="k">Duplicate attempt</div>
+            <div class="v rejected">${r.duplicate_attempt && r.duplicate_attempt.rejected ? "Rejected (" + r.duplicate_attempt.code + ")" : "not tested"}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStepper() {
+    document.getElementById("prev").disabled = current === 0;
+    document.getElementById("next").disabled = current === SNAPSHOTS.length - 1;
+    document.getElementById("counter").textContent = (current + 1) + " / " + SNAPSHOTS.length;
+    const dots = document.getElementById("dots");
+    dots.innerHTML = "";
+    SNAPSHOTS.forEach((s, i) => {
+      const d = document.createElement("div");
+      d.className = "dot" + (i === current ? " active" : "");
+      d.title = s.step;
+      d.addEventListener("click", () => goTo(i));
+      dots.appendChild(d);
+    });
+  }
+
+  function render() {
+    const snap = SNAPSHOTS[current];
+    document.getElementById("step-label").innerHTML = `Step <strong>${snap.step}</strong> — ${snap.description || ""}`;
+    renderLedger(snap);
+    renderEscalationArea(snap);
+    renderRefundArea(snap);
+    renderStepper();
+  }
+
+  function goTo(i) {
+    if (i < 0 || i >= SNAPSHOTS.length) return;
+    current = i;
+    render();
+  }
+
+  document.getElementById("prev").addEventListener("click", () => goTo(current - 1));
+  document.getElementById("next").addEventListener("click", () => goTo(current + 1));
+  window.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") goTo(current - 1);
+    if (e.key === "ArrowRight") goTo(current + 1);
+  });
+
+  render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+{
+  "snapshots": [
+    {
+      "step": "D1",
+      "description": "Northgate deposit lands, $12.85 short - fee variance, auto-closed in code.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed, $12.85 fee variance"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D2",
+      "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - ambiguous, escalated.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed, $12.85 fee variance"
+        }
+      ],
+      "escalations": [
+        {
+          "deposit_label": "D2",
+          "amount": "2310.0",
+          "currency": "USD",
+          "counterparty": "Cafe Brule",
+          "proposed": "Partial payment starting INV-104",
+          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held.",
+          "supporting": [
+            "Email: \"Paying INV-106 in full and starting on INV-104 this week.\""
+          ],
+          "unproven": "Deposit doesn't match INV-106 or INV-104 exactly; reference truncated.",
+          "confidence": "medium",
+          "related_invoice_ids": [
+            "INV-104",
+            "INV-108"
+          ]
+        }
+      ],
+      "refund": null
+    },
+    {
+      "step": "D3",
+      "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "overpaid by $150.00 - refund pending (not yet executed)"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed, $12.85 fee variance"
+        }
+      ],
+      "escalations": [
+        {
+          "deposit_label": "D2",
+          "amount": "2310.0",
+          "currency": "USD",
+          "counterparty": "Cafe Brule",
+          "proposed": "Partial payment starting INV-104",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
+          "supporting": [
+            "Email: \"starting on INV-104 this week\"",
+            "INV-106 closed by deposit D3 earlier in this run."
+          ],
+          "unproven": "Reference 'BRULE/INV1' truncated, amount doesn't match INV-104 exactly",
+          "confidence": "medium",
+          "related_invoice_ids": [
+            "INV-104",
+            "INV-108"
+          ]
+        }
+      ],
+      "refund": null
+    },
+    {
+      "step": "D4",
+      "description": "A fourth deposit confirms D2 was a partial payment - INV-104 closes, escalation withdrawn.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "CLOSED",
+          "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "overpaid by $150.00 - refund pending (not yet executed)"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed, $12.85 fee variance"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "REFUND",
+      "description": "The $150 overpayment on INV-106 is refunded.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "CLOSED",
+          "note": "closed via D2+D4: $2310.00 + $2690.00 = $5000.00"
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "overpaid by $150.00 - refund EXECUTED (transfer 1769c54b-3271-4688-9669-44b013a0b81e, PAID)"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed, $12.85 fee variance"
+        }
+      ],
+      "escalations": [],
+      "refund": {
+        "invoice_id": "INV-106",
+        "amount": "150.00",
+        "currency": "USD",
+        "transfer_id": "1769c54b-3271-4688-9669-44b013a0b81e",
+        "status": "PAID",
+        "duplicate_attempt": {
+          "rejected": true,
+          "code": "duplicate_request_id"
+        }
+      }
+    }
+  ]
+}
