@@ -97,12 +97,21 @@ def seed_ledger():
 # ---------------------------------------------------------------- deposits
 
 def land_deposits(client, accounts):
+    """Returns the deposit ids in the exact order we submitted them. The
+    sandbox's created_at has only 1-second resolution and these calls fire
+    back-to-back, so two deposits landed in the same batch routinely tie on
+    timestamp (observed: BRULE/INV1 and INV106 both at the same second) -
+    the caller needs real submission order, not a coarse clock, to process
+    them in the order they actually arrived."""
     print("\nLanding deposits...")
+    landed_ids = []
     for d in DEPOSITS_TO_LAND:
         acct_id = accounts[d["customer"]]["id"]
         payload = client.simulate_deposit(acct_id, d["amount"], d["payer_name"], d["reference"])
         print(f"    {d['customer']:<12} ${d['amount']:<10} ref={d['reference']!r:<22} -> "
               f"id={payload.get('id')}  status={payload.get('status')}")
+        landed_ids.append(payload.get("id"))
+    return landed_ids
 
 
 def _parse_timestamp(value):

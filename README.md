@@ -20,7 +20,7 @@ Sandbox only. Synthetic data. No real money moves.
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt   # plain `pip` isn't guaranteed on PATH
 ```
 
 Create `.env` in this directory:
@@ -36,8 +36,13 @@ Business Sandbox`) to be auto-approved — see `docs/builder-guide.md`.
 
 ## Running it
 
+`set -a` must come *before* `source .env`, not after — if sourced first,
+the variables become shell locals but are never exported, and
+`run_demo.py` sees them as empty (which gets a bare 403 from Airwallex's
+edge, not even a JSON error - worth knowing if you ever see that).
+
 ```bash
-source .env && set -a  # or export each var yourself
+set -a && source .env && set +a   # or export each var yourself
 python3 run_demo.py
 ```
 

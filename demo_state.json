@@ -75,12 +75,12 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Cafe Brule",
-          "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held.",
+          "proposed": "Partial payment toward INV-104",
+          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held, not being paid.",
           "supporting": [
             "Email: \"Paying INV-106 in full and starting on INV-104 this week.\""
           ],
-          "unproven": "Deposit doesn't match INV-106 or INV-104 exactly; reference truncated.",
+          "unproven": "Reference 'INV1' and amount don't cleanly match any single invoice.",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -129,14 +129,14 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Cafe Brule",
-          "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
+          "proposed": "Partial payment against INV-104",
+          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' truncated, amount doesn't match INV-104 exactly",
-          "confidence": "medium",
+          "unproven": "Deposit doesn't match INV-104 or INV-106 amounts exactly",
+          "confidence": "low",
           "related_invoice_ids": [
             "INV-104",
             "INV-108"

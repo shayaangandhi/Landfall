@@ -294,24 +294,59 @@ def process_deposit(dep, accounts, invoices, escalations):
         reevaluate_single_escalation(rec, invoices)
 
 
-def poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots):
+def poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots,
+                      known_order=None, seen_references=None):
     """A3: discovery, not a script. Re-reads GET /api/v1/deposits and
     processes anything not already seen (by id), through process_deposit()
     - the SAME function regardless of which deposit this turns out to be.
-    There is no 'now handle deposit N' step anywhere in this file."""
+    There is no 'now handle deposit N' step anywhere in this file.
+
+    known_order is an optional {deposit_id: sequence_number} map for
+    deposits WE simulated ourselves this run - the sandbox's created_at has
+    only 1-second resolution, and deposits landed back-to-back (no delay
+    between simulate_deposit calls) routinely tie on it. Observed directly:
+    BRULE/INV1 and INV106 landed in the same second and sorted on their
+    random id instead, discovering D3 before D2 and silently skipping the
+    candidate-narrowing step. known_order breaks that tie with the one
+    thing more reliable than the sandbox's clock for a deposit we created
+    ourselves: the order we actually called simulate_deposit in. Anything
+    not in known_order (a deposit we didn't initiate) falls back to
+    created_at, same as before.
+
+    seen_references guards a different, also-observed failure: run_start's
+    10-second cutoff buffer (spine.read_demo_deposits) can let a PRIOR
+    run's own deposit back into scope if the two runs are close enough in
+    time - it then reads as a second, duplicate landing of the same
+    reference this run. A deposit whose reference this run has already
+    fully processed is treated as that artifact and skipped, not reprocessed."""
+    known_order = known_order or {}
+    seen_references = seen_references if seen_references is not None else set()
     deposits = spine.read_demo_deposits(client, accounts, run_start)
     new_deposits = [d for d in deposits if d.get("id") not in seen_ids]
-    new_deposits.sort(key=lambda d: (d.get("created_at") or d.get("create_time") or "", d.get("id") or ""))
+    new_deposits.sort(key=lambda d: (
+        known_order.get(d.get("id"), float("inf")),
+        d.get("created_at") or d.get("create_time") or "",
+        d.get("id") or "",
+    ))
 
+    processed = []
     for dep in new_deposits:
         seen_ids.add(dep.get("id"))
-        label = deposit_label_for(dep.get("reference"))
+        reference = dep.get("reference")
+        if reference in seen_references:
+            print(f"\n--- [SKIP] reference {reference!r} already processed this run "
+                  f"(deposit {dep.get('id')}) - likely a prior run's deposit caught by "
+                  f"the scoping window's clock-skew buffer, not a genuine second landing ---")
+            continue
+        seen_references.add(reference)
+        processed.append(dep)
+        label = deposit_label_for(reference)
         print(f"\n--- {label} (discovered via GET /deposits) ---")
         process_deposit(dep, accounts, invoices, escalations)
         spine.print_ledger(invoices)
         snapshots.append(snapshot(label, invoices, escalations))
 
-    return new_deposits
+    return processed
 
 
 def invoices_needing_refund(invoices):
@@ -430,11 +465,14 @@ def main():
     print("=" * 70)
     run_start = datetime.now(timezone.utc)
     seen_ids = set()
-    spine.land_deposits(client, accounts)  # the stimulus - three deposits actually arriving
+    seen_references = set()
+    landed_ids = spine.land_deposits(client, accounts)  # the stimulus - three deposits actually arriving
+    known_order = {dep_id: i for i, dep_id in enumerate(landed_ids)}
 
     print("\nWaiting for deposits to settle, then polling GET /deposits...")
     time.sleep(5)
-    found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots)
+    found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids,
+                              snapshots, known_order=known_order, seen_references=seen_references)
     print(f"\n  discovered and processed {len(found)} deposit(s)")
 
     print("\n" + "=" * 70)
@@ -443,10 +481,12 @@ def main():
     acct_id = accounts[D4["customer"]]["id"]
     payload = client.simulate_deposit(acct_id, D4["amount"], D4["payer_name"], D4["reference"])
     print(f"  landed: {D4['customer']} ${D4['amount']} ref={D4['reference']!r} -> id={payload.get('id')}")
+    known_order[payload.get("id")] = len(known_order)
 
     print("\nWaiting for it to settle, then polling GET /deposits again...")
     time.sleep(5)
-    found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots)
+    found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids,
+                              snapshots, known_order=known_order, seen_references=seen_references)
     if not found:
         print("  could not read the new deposit back yet - nothing new discovered this poll.")
 
