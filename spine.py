@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from awx_client import AwxClient
+from config import FEE_TOLERANCE  # noqa: F401 - re-exported as spine.FEE_TOLERANCE
 
 STATE_PATH = os.path.join(os.path.dirname(__file__), "state.json")
 
@@ -46,7 +47,6 @@ DEPOSITS_TO_LAND = [
      "reference": "INV106"},
 ]
 
-FEE_TOLERANCE = Decimal("50.00")  # flat, code-owned tolerance for in-transit fee variance
 
 
 # ---------------------------------------------------------------- state

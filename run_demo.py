@@ -441,7 +441,7 @@ def write_outputs(snapshots):
 
     with open(TEMPLATE_PATH) as f:
         template = f.read()
-    html = template.replace("/*__SNAPSHOTS_JSON__*/[]", json.dumps(snapshots, default=str))
+    html = template.replace("/*__SNAPSHOTS_AGENT_JSON__*/[]", json.dumps(snapshots, default=str))
     with open(HTML_OUT_PATH, "w") as f:
         f.write(html)
 
@@ -511,4 +511,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    if "--rules-only" in sys.argv:
+        # The counterfactual lives in its own module (rules_only.py) rather
+        # than branching this file's agent-calling functions - cleaner than
+        # threading an if-rules-only flag through ask_agent_and_record,
+        # reevaluate_single_escalation, and try_combined_close.
+        import rules_only
+        rules_only.main()
+    else:
+        main()

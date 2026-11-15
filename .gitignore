@@ -1,5 +1,6 @@
 .env
 state.json
+state.rules_only.json
 agent_cache.json
 __pycache__/
 *.pyc

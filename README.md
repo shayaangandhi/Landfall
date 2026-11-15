@@ -80,12 +80,47 @@ python3 determinism_check.py  # also live
 python3 spine.py              # Airwallex only, no model
 ```
 
+### The `--rules-only` counterfactual
+
+```bash
+python3 run_demo.py --rules-only   # or: python3 rules_only.py
+```
+
+Runs the identical invoices, deposits, and email as `run_demo.py` - same
+dollar figures, same references, nothing about the hard case touched - but
+with the judgment layer removed entirely. No call to Claude exists anywhere
+in `rules_only.py`. In place of the model, an ambiguous deposit is resolved
+by one ordinary rule: close the single candidate invoice whose amount falls
+within a conventional tolerance band of the deposit (`config.py`'s
+`rules_only_tolerance` - **2% of the invoice, or the same $50 flat floor the
+real pipeline uses for fee variance, whichever is larger**).
+
+2% is an ordinary reconciliation tolerance band, not inflated to produce a
+particular answer - it's the kind of number a conventional auto-match rule
+would actually ship with. Under it, the D2 deposit ($2,310) lands 1.7% off
+INV-108's $2,350, which is inside the band. Rules-only closes INV-108 and
+writes off an invoice the customer is actively disputing. Run it and see
+for yourself; the verdict it prints names exactly that failure. It also
+never recognizes that D2 + D4 ($2,310 + $2,690) is an exact, full payment
+of INV-104 - that invoice is left open and apparently unpaid, since
+spotting a split across two deposits using the email as a tiebreaker is
+exactly what this file has no way to do.
+
+Writes `rules_only_state.json` as its own snapshot sequence, separate from
+`demo_state.json`, and - if `demo_state.json` already exists - regenerates
+`demo_view.html` with a toggle between the two (run `run_demo.py` first,
+then this, to see both). Uses its own Global Accounts
+(`state.rules_only.json`) so the two runs never share deposit history.
+
 ## Architecture
 
 - **Code owns**: tolerance thresholds, the fee table, matching arithmetic,
   duplicate protection (via Airwallex's own idempotent `request_id`), state
   transitions, every amount that reaches an API call. Money is `Decimal`
-  throughout — never a `float`.
+  throughout — never a `float`. Tolerance policy is centralized in
+  `config.py` as named constants (`FEE_TOLERANCE`,
+  `RULES_ONLY_TOLERANCE_PERCENT`) rather than literals scattered through
+  matching logic.
 - **The model owns**: reading a truncated remittance reference and the
   customer email, judging whether a gap is explainable, proposing a match
   when arithmetic is genuinely ambiguous, writing the short, fixed-field

@@ -1,0 +1,148 @@
+{
+  "snapshots": [
+    {
+      "step": "D1",
+      "description": "Northgate deposit lands, $12.85 short - within tolerance band, auto-closed.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D2",
+      "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit lands with a truncated reference - tolerance band closes INV-108.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D3",
+      "description": "Caf\u00e9 Br\u00fbl\u00e9 deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D4",
+      "description": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.",
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Cafe Brule",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Cafe Brule",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Cafe Brule",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    }
+  ]
+}
