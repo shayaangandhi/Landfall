@@ -46,24 +46,18 @@ EMAIL_TEXT = (
     "starting on INV-104 this week."
 )
 
-D4 = {"customer": "Café Brûlé", "amount": "2690.00", "payer_name": "CAFÉ BRÛLÉ",
-      "reference": "BRULE/INV104 FINAL"}
-
-# Deposit labels and processing order - matched by reference since each is
-# unique in this scripted demo. Snapshots are taken in THIS order regardless
-# of what order the deposits API happens to list them in.
-DEPOSIT_LABELS = {
-    "NORTHGATE/INV112": "D1",
-    "BRULE/INV1": "D2",
-    "INV106": "D3",
-    "BRULE/INV104 FINAL": "D4",
-}
+# D4 and DEPOSIT_LABELS live in spine.py now - shared with rules_only.py
+# so the two modes can never drift on which reference means which step.
 
 STEP_DESCRIPTIONS = {
     "D1": "Northgate deposit lands, $12.85 short - fee variance, auto-closed in code.",
     "D2": "Café Brûlé deposit lands with a truncated reference - ambiguous, escalated.",
     "D3": "Café Brûlé deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
     "D4": "A fourth deposit confirms D2 was a partial payment - INV-104 closes, escalation withdrawn.",
+    "D5": "A boring deposit lands - exact match, closes INV-220 instantly in code.",
+    "D6": "Another boring deposit - exact match, closes INV-230 instantly in code.",
+    "D7": "A boring Northgate deposit - exact match, closes INV-205 instantly in code.",
+    "D8": "A single lumped payment lands - exact-sum match closes INV-221 and INV-222 together, in code, no model.",
     "REFUND": "The $150 overpayment on INV-106 is refunded.",
 }
 
@@ -93,7 +87,7 @@ def to_model_deposit(dep):
 
 
 def deposit_label_for(reference):
-    return DEPOSIT_LABELS.get(reference, "?")
+    return spine.DEPOSIT_LABELS.get(reference, "?")
 
 
 def ledger_facts_for(invoices, customer, prior_candidate_ids, current_candidate_ids):
@@ -263,6 +257,22 @@ def process_deposit(dep, accounts, invoices, escalations):
     amount = dep.get("amount")  # already Decimal - parse_float=Decimal in awx_client
     reference = dep.get("reference") or ""
     label = deposit_label_for(reference)
+
+    lumped = spine.match_lumped_payment(invoices, customer, reference, amount)
+    if lumped:
+        names = " + ".join(i["id"] for i in lumped)
+        total = sum(i["amount"] for i in lumped)
+        for inv in lumped:
+            other = next(i for i in lumped if i is not inv)
+            inv["status"] = "CLOSED"
+            inv["closing_deposit_amount"] = amount
+            inv["closed_by_label"] = label
+            inv["note"] = f"auto-closed, lumped payment with {other['id']} (combined ${total:.2f})"
+        print(f"  [AUTO-CLOSE LUMPED] {names} - ${amount:.2f} covers both exactly ({customer})")
+        for rec in escalations.values():
+            reevaluate_single_escalation(rec, invoices)
+        return f"Lumped payment - covers {names} exactly (${total:.2f}), closed in code"
+
     digits = spine.match_reference(reference)
 
     if not digits:
@@ -517,9 +527,9 @@ def main():
     print("\n" + "=" * 70)
     print("MID-RUN  a fourth deposit lands")
     print("=" * 70)
-    acct_id = accounts[D4["customer"]]["id"]
-    payload = client.simulate_deposit(acct_id, D4["amount"], D4["payer_name"], D4["reference"])
-    print(f"  landed: {D4['customer']} ${D4['amount']} ref={D4['reference']!r} -> id={payload.get('id')}")
+    acct_id = accounts[spine.D4["customer"]]["id"]
+    payload = client.simulate_deposit(acct_id, spine.D4["amount"], spine.D4["payer_name"], spine.D4["reference"])
+    print(f"  landed: {spine.D4['customer']} ${spine.D4['amount']} ref={spine.D4['reference']!r} -> id={payload.get('id')}")
     known_order[payload.get("id")] = len(known_order)
 
     print("\nWaiting for it to settle, then polling GET /deposits again...")

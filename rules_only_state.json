@@ -9,8 +9,8 @@
         "payer": "NORTHGATE COFFEE",
         "reference": "NORTHGATE/INV112",
         "account_customer": "Northgate",
-        "account_id": "e4254737-f62e-4821-9f76-f3e640f033cb",
-        "account_id_last5": "033cb",
+        "account_id": "cb4b7940-0c12-401a-a77e-a4b92bdbc1be",
+        "account_id_last5": "bc1be",
         "outcome": "INV-112 - $12.85 off, within the $64.00 tolerance band"
       },
       "ledger": [
@@ -41,6 +41,41 @@
           "amount": "3200.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "OPEN",
+          "note": ""
         }
       ],
       "escalations": [],
@@ -55,8 +90,8 @@
         "payer": "CAF\u00c9 BR\u00dbL\u00c9",
         "reference": "BRULE/INV1",
         "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
-        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
-        "account_id_last5": "2ee18",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
         "outcome": "INV-108 - $40.00 off, within the $50.00 tolerance band"
       },
       "ledger": [
@@ -87,6 +122,41 @@
           "amount": "3200.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "OPEN",
+          "note": ""
         }
       ],
       "escalations": [],
@@ -101,8 +171,8 @@
         "payer": "CAF\u00c9 BR\u00dbL\u00c9",
         "reference": "INV106",
         "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
-        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
-        "account_id_last5": "2ee18",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
         "outcome": "INV-106 - overpaid $150.00"
       },
       "ledger": [
@@ -133,6 +203,365 @@
           "amount": "3200.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "OPEN",
+          "note": ""
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D5",
+      "description": "A boring deposit lands - exact match, closes INV-220 instantly in code.",
+      "deposit": {
+        "amount": "4200.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "BRULE/INV220",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
+        "outcome": "INV-220 - $0.00 off, within the $84.00 tolerance band"
+      },
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $84.00)"
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "OPEN",
+          "note": ""
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D6",
+      "description": "Another boring deposit - exact match, closes INV-230 instantly in code.",
+      "deposit": {
+        "amount": "3400.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "BRULE/INV230",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
+        "outcome": "INV-230 - $0.00 off, within the $68.00 tolerance band"
+      },
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $84.00)"
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $68.00)"
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "OPEN",
+          "note": ""
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D7",
+      "description": "A boring Northgate deposit - exact match, closes INV-205 instantly in code.",
+      "deposit": {
+        "amount": "2750.0",
+        "currency": "USD",
+        "payer": "NORTHGATE COFFEE",
+        "reference": "NORTHGATE/INV205",
+        "account_customer": "Northgate",
+        "account_id": "cb4b7940-0c12-401a-a77e-a4b92bdbc1be",
+        "account_id_last5": "bc1be",
+        "outcome": "INV-205 - $0.00 off, within the $55.00 tolerance band"
+      },
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $84.00)"
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $68.00)"
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $55.00)"
+        }
+      ],
+      "escalations": [],
+      "refund": null
+    },
+    {
+      "step": "D8",
+      "description": "A single lumped payment lands - exact-sum match closes INV-221 and INV-222 together, in code, no model.",
+      "deposit": {
+        "amount": "2500.0",
+        "currency": "USD",
+        "payer": "CAF\u00c9 BR\u00dbL\u00c9",
+        "reference": "BRULE/INV221+INV222",
+        "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
+        "outcome": "Lumped payment - covers INV-221 + INV-222 exactly ($2500.00), closed in code"
+      },
+      "ledger": [
+        {
+          "id": "INV-104",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "5000.00",
+          "status": "OPEN",
+          "note": ""
+        },
+        {
+          "id": "INV-106",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1800.00",
+          "status": "CLOSED",
+          "note": "auto-closed, overpaid $150.00 - refund pending"
+        },
+        {
+          "id": "INV-108",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "2350.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($40.00 off, band $50.00)"
+        },
+        {
+          "id": "INV-112",
+          "customer": "Northgate",
+          "amount": "3200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $84.00)"
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "CLOSED",
+          "note": "auto-closed, lumped payment with INV-222 (combined $2500.00)"
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "CLOSED",
+          "note": "auto-closed, lumped payment with INV-221 (combined $2500.00)"
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $68.00)"
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $55.00)"
         }
       ],
       "escalations": [],
@@ -147,8 +576,8 @@
         "payer": "CAF\u00c9 BR\u00dbL\u00c9",
         "reference": "BRULE/INV104 FINAL",
         "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
-        "account_id": "d6a61a20-b979-4ab8-87c5-2aa2c412ee18",
-        "account_id_last5": "2ee18",
+        "account_id": "1c935697-dd93-4e7b-a901-ee215f76ce7c",
+        "account_id_last5": "6ce7c",
         "outcome": "no candidate within tolerance among (INV-104) - no model available, flagging for a human"
       },
       "ledger": [
@@ -179,6 +608,41 @@
           "amount": "3200.00",
           "status": "CLOSED",
           "note": "auto-closed by tolerance band ($12.85 off, band $64.00)"
+        },
+        {
+          "id": "INV-220",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "4200.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $84.00)"
+        },
+        {
+          "id": "INV-221",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "990.00",
+          "status": "CLOSED",
+          "note": "auto-closed, lumped payment with INV-222 (combined $2500.00)"
+        },
+        {
+          "id": "INV-222",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "1510.00",
+          "status": "CLOSED",
+          "note": "auto-closed, lumped payment with INV-221 (combined $2500.00)"
+        },
+        {
+          "id": "INV-230",
+          "customer": "Caf\u00e9 Br\u00fbl\u00e9",
+          "amount": "3400.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $68.00)"
+        },
+        {
+          "id": "INV-205",
+          "customer": "Northgate",
+          "amount": "2750.00",
+          "status": "CLOSED",
+          "note": "auto-closed by tolerance band ($0.00 off, band $55.00)"
         }
       ],
       "escalations": [],

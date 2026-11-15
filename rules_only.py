@@ -46,21 +46,18 @@ DEMO_STATE_PATH = os.path.join(os.path.dirname(__file__), "demo_state.json")
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "view_template.html")
 HTML_OUT_PATH = os.path.join(os.path.dirname(__file__), "demo_view.html")
 
-D4 = {"customer": "Café Brûlé", "amount": "2690.00", "payer_name": "CAFÉ BRÛLÉ",
-      "reference": "BRULE/INV104 FINAL"}
-
-DEPOSIT_LABELS = {
-    "NORTHGATE/INV112": "D1",
-    "BRULE/INV1": "D2",
-    "INV106": "D3",
-    "BRULE/INV104 FINAL": "D4",
-}
+# D4 and DEPOSIT_LABELS live in spine.py - shared with run_demo.py so the
+# two modes can never drift on which reference means which step.
 
 STEP_DESCRIPTIONS = {
     "D1": "Northgate deposit lands, $12.85 short - within tolerance band, auto-closed.",
     "D2": "Café Brûlé deposit lands with a truncated reference - tolerance band closes INV-108.",
     "D3": "Café Brûlé deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
     "D4": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.",
+    "D5": "A boring deposit lands - exact match, closes INV-220 instantly in code.",
+    "D6": "Another boring deposit - exact match, closes INV-230 instantly in code.",
+    "D7": "A boring Northgate deposit - exact match, closes INV-205 instantly in code.",
+    "D8": "A single lumped payment lands - exact-sum match closes INV-221 and INV-222 together, in code, no model.",
 }
 
 
@@ -100,7 +97,7 @@ def provision_accounts(client):
 
 
 def deposit_label_for(reference):
-    return DEPOSIT_LABELS.get(reference, "?")
+    return spine.DEPOSIT_LABELS.get(reference, "?")
 
 
 def resolve_rules_only(candidates, amount):
@@ -179,6 +176,25 @@ def process_deposit(dep, accounts, invoices):
     customer = spine.account_customer(accounts, dep.get("global_account_id"))
     amount = dep.get("amount")
     reference = dep.get("reference") or ""
+    label = deposit_label_for(reference)
+
+    # Exact-sum matching is a fixed rule, not a judgment call - whether a
+    # model exists has no bearing on it, so rules-only gets the same rule
+    # run_demo.py does. The point of this file is isolating the one case
+    # that actually needs the model (D2); this isn't it.
+    lumped = spine.match_lumped_payment(invoices, customer, reference, amount)
+    if lumped:
+        names = " + ".join(i["id"] for i in lumped)
+        total = sum(i["amount"] for i in lumped)
+        for inv in lumped:
+            other = next(i for i in lumped if i is not inv)
+            inv["status"] = "CLOSED"
+            inv["closing_deposit_amount"] = amount
+            inv["closed_by_label"] = label
+            inv["note"] = f"auto-closed, lumped payment with {other['id']} (combined ${total:.2f})"
+        print(f"  [AUTO-CLOSE LUMPED] {names} - ${amount:.2f} covers both exactly ({customer})")
+        return f"Lumped payment - covers {names} exactly (${total:.2f}), closed in code"
+
     digits = spine.match_reference(reference)
 
     if not digits:
@@ -306,9 +322,9 @@ def main():
     print("\n" + "=" * 70)
     print("MID-RUN  a fourth deposit lands")
     print("=" * 70)
-    acct_id = accounts[D4["customer"]]["id"]
-    payload = client.simulate_deposit(acct_id, D4["amount"], D4["payer_name"], D4["reference"])
-    print(f"  landed: {D4['customer']} ${D4['amount']} ref={D4['reference']!r} -> id={payload.get('id')}")
+    acct_id = accounts[spine.D4["customer"]]["id"]
+    payload = client.simulate_deposit(acct_id, spine.D4["amount"], spine.D4["payer_name"], spine.D4["reference"])
+    print(f"  landed: {spine.D4['customer']} ${spine.D4['amount']} ref={spine.D4['reference']!r} -> id={payload.get('id')}")
     known_order[payload.get("id")] = len(known_order)
 
     print("\nWaiting for it to settle, then polling GET /deposits again...")

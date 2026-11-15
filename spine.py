@@ -31,21 +31,63 @@ DEMO_ACCOUNTS = {
 
 # Amounts are Decimal, built from strings - never a float literal
 # (docs/judge-audit.md B1). Money is never binary floating point here.
+#
+# The hard case (INV-104/106/108/112, D1-D4 below) is untouched - same
+# ids, same amounts, same positions in these lists. The 220/221/222/230/205
+# block is volume added around it so most matches are boring and the one
+# escalation stands out. Deliberately numbered in the 2xx range: D2's trap
+# works by matching any OPEN Café Brûlé invoice whose number starts with
+# "1" (104, 106, 108 all do) - a new invoice starting with "1" would
+# silently join that candidate set and corrupt the hard case. 2xx can't.
 INVOICES = [
     {"id": "INV-104", "customer": "Café Brûlé", "amount": Decimal("5000.00")},
     {"id": "INV-106", "customer": "Café Brûlé", "amount": Decimal("1800.00")},
     {"id": "INV-108", "customer": "Café Brûlé", "amount": Decimal("2350.00")},
     {"id": "INV-112", "customer": "Northgate", "amount": Decimal("3200.00")},
+    {"id": "INV-220", "customer": "Café Brûlé", "amount": Decimal("4200.00")},
+    {"id": "INV-221", "customer": "Café Brûlé", "amount": Decimal("990.00")},
+    {"id": "INV-222", "customer": "Café Brûlé", "amount": Decimal("1510.00")},
+    {"id": "INV-230", "customer": "Café Brûlé", "amount": Decimal("3400.00")},
+    {"id": "INV-205", "customer": "Northgate", "amount": Decimal("2750.00")},
 ]
 
 DEPOSITS_TO_LAND = [
+    # --- the hard case: untouched, same order, same content ---
     {"customer": "Northgate", "amount": "3187.15", "payer_name": "NORTHGATE COFFEE",
      "reference": "NORTHGATE/INV112"},
     {"customer": "Café Brûlé", "amount": "2310.00", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "BRULE/INV1"},
     {"customer": "Café Brûlé", "amount": "1950.00", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "INV106"},
+    # --- boring volume: exact matches, close instantly, no judgment ---
+    {"customer": "Café Brûlé", "amount": "4200.00", "payer_name": "CAFÉ BRÛLÉ",
+     "reference": "BRULE/INV220"},
+    {"customer": "Café Brûlé", "amount": "3400.00", "payer_name": "CAFÉ BRÛLÉ",
+     "reference": "BRULE/INV230"},
+    {"customer": "Northgate", "amount": "2750.00", "payer_name": "NORTHGATE COFFEE",
+     "reference": "NORTHGATE/INV205"},
+    # --- the one lumped payment: exact-sum match, resolved in code, no model ---
+    {"customer": "Café Brûlé", "amount": "2500.00", "payer_name": "CAFÉ BRÛLÉ",
+     "reference": "BRULE/INV221+INV222"},
 ]
+
+# Mid-run: a fourth deposit lands after Run 1 settles. Untouched - same
+# amount, same reference, same customer as the original hard case.
+D4 = {"customer": "Café Brûlé", "amount": "2690.00", "payer_name": "CAFÉ BRÛLÉ",
+      "reference": "BRULE/INV104 FINAL"}
+
+# Shared between run_demo.py and rules_only.py so the two modes can never
+# drift on which reference means which step.
+DEPOSIT_LABELS = {
+    "NORTHGATE/INV112": "D1",
+    "BRULE/INV1": "D2",
+    "INV106": "D3",
+    "BRULE/INV104 FINAL": "D4",
+    "BRULE/INV220": "D5",
+    "BRULE/INV230": "D6",
+    "NORTHGATE/INV205": "D7",
+    "BRULE/INV221+INV222": "D8",
+}
 
 
 
@@ -169,6 +211,45 @@ def candidates_for(invoices, customer, digits):
         and inv["status"] == "OPEN"
         and inv["id"].replace("INV-", "").startswith(digits)
     ]
+
+
+def match_references(reference):
+    """Every invoice-number digit group found in a reference, not just
+    the first - used for a lumped payment that explicitly names more than
+    one invoice."""
+    return re.findall(r"INV-?(\d+)", reference or "", re.IGNORECASE)
+
+
+def match_lumped_payment(invoices, customer, reference, amount):
+    """A single deposit whose reference names exactly two open invoices
+    for this customer by their full number, and whose amount sums exactly
+    (within fee tolerance) to those two invoices. Matched by full number
+    equality, not the prefix-startswith rule candidates_for uses - the
+    reference states both invoice numbers outright, so there is nothing
+    ambiguous to weigh. A fixed rule, like resolve_single: shared by both
+    run_demo.py and rules_only.py, since whether a model exists has no
+    bearing on an exact-sum arithmetic check. Returns the two matched
+    invoices, or None if the reference/amount don't cleanly qualify."""
+    nums = match_references(reference)
+    distinct = list(dict.fromkeys(nums))  # de-dupe, keep first-seen order
+    if len(distinct) != 2:
+        return None
+
+    matched = []
+    for num in distinct:
+        found = [
+            inv for inv in invoices
+            if inv["customer"] == customer and inv["status"] == "OPEN"
+            and inv["id"].replace("INV-", "") == num
+        ]
+        if len(found) != 1:
+            return None
+        matched.append(found[0])
+
+    total = matched[0]["amount"] + matched[1]["amount"]
+    if abs(round(amount - total, 2)) <= FEE_TOLERANCE:
+        return matched
+    return None
 
 
 def resolve_single(inv, amount):

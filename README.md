@@ -48,11 +48,22 @@ set -a && source .env && set +a   # or export each var yourself
 python3 run_demo.py
 ```
 
-This provisions two USD Global Accounts (Café Brûlé, Northgate), lands three
-deposits, discovers and processes them by polling `GET /deposits`, lands a
-fourth deposit mid-run, discovers and processes that too, then finds and
-executes any overpayment refund it detects — prompting for a console
-approval first. It writes two files:
+This provisions two USD Global Accounts (Café Brûlé, Northgate), seeds nine
+invoices across them, lands seven deposits, discovers and processes them by
+polling `GET /deposits`, lands an eighth deposit mid-run, discovers and
+processes that too, then finds and executes any overpayment refund it
+detects — prompting for a console approval first. It writes two files:
+
+Most of those nine invoices are boring on purpose - five close on an exact
+amount match with zero judgment involved, so the one hard case (the D2
+escalation) stands out instead of blending into a pile of equally-ambiguous
+puzzles. One of the five is a lumped payment: a single deposit
+(`BRULE/INV221+INV222`) whose amount is the *exact sum* of two invoices,
+matched by `spine.match_lumped_payment()` - both invoice numbers are named
+outright in the reference, so there's nothing to judge and no model call,
+same as every other fixed rule. That function is shared by `run_demo.py`
+and `rules_only.py`, since exact-sum arithmetic doesn't care whether a
+model exists.
 
 - `demo_state.json` — an ordered list of snapshots, one per deposit
   discovered plus one after the refund, each with the full invoice ledger
