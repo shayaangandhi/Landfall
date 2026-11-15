@@ -330,6 +330,39 @@
     color: var(--closed);
   }
 
+  /* ---- raw API response blocks ---------------------------------- */
+  /* This replaces terminal footage in the video - the real response
+     bodies have to be legible at 1080p on their own, not a screen
+     recording of a terminal. */
+
+  .raw-response {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .raw-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    margin-bottom: 10px;
+  }
+
+  .raw-json {
+    background: #05070a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 17px;
+    line-height: 1.55;
+    color: #b8f2c9;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
   /* ---- step control -------------------------------------------- */
 
   .stepper {
@@ -468,6 +501,10 @@
 
   function fmtMoney(n, currency) {
     return "$" + Number(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + (currency || "USD");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
   }
 
   function statusClass(inv, escalatedIds) {
@@ -617,6 +654,16 @@
             <div class="v rejected">${r.duplicate_attempt && r.duplicate_attempt.rejected ? "Rejected (" + r.duplicate_attempt.code + ")" : "not tested"}</div>
           </div>
         </div>
+        ${r.transfer_response ? `
+        <div class="raw-response">
+          <div class="raw-label">GET /transfers/${escapeHtml(r.transfer_id)} &middot; reached ${escapeHtml(r.status)}</div>
+          <pre class="raw-json">${escapeHtml(JSON.stringify(r.transfer_response, null, 2))}</pre>
+        </div>` : ""}
+        ${r.duplicate_response ? `
+        <div class="raw-response">
+          <div class="raw-label">POST /transfers/create &middot; same request_id, replayed &middot; rejected</div>
+          <pre class="raw-json">${escapeHtml(JSON.stringify(r.duplicate_response, null, 2))}</pre>
+        </div>` : ""}
       </div>
     `;
   }

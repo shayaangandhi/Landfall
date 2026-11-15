@@ -92,7 +92,7 @@
         "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
         "account_id": "6f1d35bf-baa9-49f3-98c5-8619c126fd02",
         "account_id_last5": "6fd02",
-        "outcome": "Ambiguous - escalated: Partial payment starting INV-104 (advisory, needs a person)"
+        "outcome": "Ambiguous - escalated: Partial payment against INV-104 (advisory, needs a person)"
       },
       "ledger": [
         {
@@ -165,12 +165,12 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108 over a disputed line.",
+          "proposed": "Partial payment against INV-104",
+          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\""
           ],
-          "unproven": "Reference 'INV1' and amount don't exactly match any invoice.",
+          "unproven": "Email gives no exact amount for INV-104 part-payment",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -265,12 +265,12 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 due to disputed line.",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Deposit doesn't match INV-104's full $5,000 amount.",
+          "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -365,12 +365,12 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 due to disputed line.",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Deposit doesn't match INV-104's full $5,000 amount.",
+          "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -465,12 +465,12 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 due to disputed line.",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Deposit doesn't match INV-104's full $5,000 amount.",
+          "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -565,12 +565,12 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 due to disputed line.",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Deposit doesn't match INV-104's full $5,000 amount.",
+          "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -665,12 +665,12 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Customer is holding INV-108 due to disputed line.",
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Customer is holding INV-108 over a disputed line.",
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Deposit doesn't match INV-104's full $5,000 amount.",
+          "unproven": "Reference 'INV1' truncated, amount doesn't match INV-104 exactly",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -840,6 +840,81 @@
         "duplicate_attempt": {
           "rejected": true,
           "code": "duplicate_request_id"
+        },
+        "transfer_response": {
+          "amount_beneficiary_receives": "150.0",
+          "amount_payer_pays": "150.0",
+          "beneficiary": {
+            "address": {
+              "city": "Woodhaven",
+              "country_code": "US",
+              "postcode": "11421",
+              "state": "NY",
+              "street_address": "89-16 Jamaica Ave"
+            },
+            "bank_details": {
+              "account_currency": "USD",
+              "account_name": "Cafe Brule SARL",
+              "account_number": "5563012487",
+              "account_routing_type1": "aba",
+              "account_routing_value1": "026073150",
+              "bank_account_category": "Checking",
+              "bank_country_code": "US",
+              "bank_name": "Community Federal Savings Bank",
+              "local_clearing_system": "ACH"
+            },
+            "entity_type": "COMPANY",
+            "type": "BANK_ACCOUNT"
+          },
+          "beneficiary_id": "8372e709-e5d1-4faf-8b9b-3d075400ba14",
+          "created_at": "2026-11-15T14:10:56+0000",
+          "dispatch_date": "2026-11-15",
+          "fee_amount": 0,
+          "fee_currency": "USD",
+          "fee_paid_by": "PAYER",
+          "funding": {
+            "status": "FUNDED"
+          },
+          "id": "1769c54b-3271-4688-9669-44b013a0b81e",
+          "payer": {
+            "additional_info": {
+              "business_incorporation_date": "2017-07-22",
+              "business_registration_number": "123456789",
+              "business_registration_type": "COMPANY"
+            },
+            "address": {
+              "city": "Los Angeles",
+              "country_code": "US",
+              "postcode": "90001",
+              "state": "CA",
+              "street_address": "8549 Norine Land"
+            },
+            "company_name": "Sandbox Business",
+            "entity_type": "COMPANY"
+          },
+          "reason": "Refund of overpayment",
+          "reference": "REFUND-INV-106",
+          "remarks": "",
+          "request_id": "refund-INV-106",
+          "short_reference_id": "P261115-QFQNWA3",
+          "source_amount": "150.0",
+          "source_currency": "USD",
+          "status": "PAID",
+          "swift_charge_option": "SHARED",
+          "transfer_amount": "150.0",
+          "transfer_currency": "USD",
+          "transfer_date": "2026-11-15",
+          "transfer_method": "LOCAL",
+          "updated_at": "2026-11-15T14:11:00+0000"
+        },
+        "duplicate_response": {
+          "code": "duplicate_request_id",
+          "details": {
+            "id": "1769c54b-3271-4688-9669-44b013a0b81e",
+            "request_id": "refund-INV-106"
+          },
+          "message": "The request ID refund-INV-106 has been used for a transfer with the transfer ID 1769c54b-3271-4688-9669-44b013a0b81e before. Please use a different request ID if you wish to create a separate transfer.",
+          "source": "request_id"
         }
       }
     }

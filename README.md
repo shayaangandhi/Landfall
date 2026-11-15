@@ -70,7 +70,11 @@ model exists.
   and any open escalation card.
 - `demo_view.html` — a single self-contained page (open it directly in a
   browser, no server needed) that steps through those snapshots with
-  prev/next buttons, for recording the demo video.
+  prev/next buttons, for recording the demo video. The refund step renders
+  the real API responses verbatim as monospace blocks - the `GET
+  /transfers/{id}` body reaching `PAID`, and the `duplicate_request_id`
+  rejection body from replaying the same refund - in place of terminal
+  footage, since that output needs to live in the page itself.
 
 Other entry points:
 
@@ -145,6 +149,46 @@ then this, to see both). Uses its own Global Accounts
   an invoice it wasn't offered is refused by code, not trusted.
 - All Airwallex sandbox calls live behind one interface (`awx_client.py`)
   so the decision logic never talks HTTP directly.
+
+## How I verified the judgment is real
+
+Three checks, in `tests.py` (`python3 tests.py` - the first two hit the live
+Anthropic API):
+
+- **Evidence sensitivity (A1).** The single most likely thing a sharp judge
+  asks for live: change the evidence, see if the decision changes. Delete
+  the "we're holding INV-108" sentence from the customer email and re-run
+  the exact same ambiguous deposit. Baseline email → proposes INV-104.
+  Hold sentence removed → flips to INV-108, the tidy arithmetic match that
+  was rejected before. If it had stayed INV-104 either way, the answer
+  would be baked in somewhere and the model would be decoration. It isn't -
+  this is a live model call each time, not a fixture.
+- **Typed-tool refusal (C3).** A proposal naming `INV-999` - an invoice it
+  was never offered - is refused by `agent.validate_proposal()`, not
+  trusted. Pure function, no network call, but it's the one thing a model
+  must never be trusted to get right on its own, so it's checked every run.
+- **Scoped fallback, not a universal bypass (A4).** The D4 step's
+  combined-sum close never reads the model's recommendation - that's a
+  real finding against "the model's judgment changes the outcome," stated
+  plainly rather than argued away (see Known Limitations below). What
+  `tests.py` adds is the boundary: a reconciling second deposit closes the
+  invoice through pure arithmetic; a non-reconciling one does not,
+  leaving the escalation open and dependent on the model's card. The
+  fallback only fires on exact reconciliation, not generally.
+
+**A fourth thing worth stating because it shows the verification was
+adversarial, not decorative:** `agent.py`'s tool schema originally shipped
+with field examples that described this exact scenario -
+`tidy_match_rejection`'s example read "...Customer's email puts INV-108 on
+hold...", and `proposed_summary`'s read "'Partial payment against
+INV-104'". That is the demo's own answer, sitting in the model's input on
+every single call. Had the A1 test been written against that schema, a
+"PASS" would have proven nothing - the model could have been echoing its
+own instructions. Caught before trusting any test result, genericized to
+shape-only placeholders with invented numbers, re-ran `determinism_check.py`
+to confirm the real answer still held without the specifics in the prompt,
+and only then was A1 written and run. The fix is still in `agent.py`'s git
+history if you want to see what it looked like wrong.
 
 ## Known limitations
 

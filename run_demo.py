@@ -444,6 +444,12 @@ def execute_refund_step(client, invoice):
         "transfer_id": transfer_id,
         "status": final.get("status"),
         "duplicate_attempt": {"rejected": duplicate_rejected, "code": payload2.get("code")},
+        # Raw API responses, shown verbatim in the HTML refund panel - this
+        # stands in for the terminal footage the video had planned, so the
+        # real GET /transfers/{id} body and the real 400 duplicate_request_id
+        # body both need to live in the page, not just a summary of them.
+        "transfer_response": final,
+        "duplicate_response": payload2,
     }
 
 
