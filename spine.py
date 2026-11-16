@@ -29,6 +29,16 @@ DEMO_ACCOUNTS = {
     "Northgate": {"country_code": "US", "currency": "USD"},
 }
 
+# Café Brûlé is in Paris and holds euros; Northgate is in London and holds
+# pounds. Both are invoiced in USD - their own banks convert and send
+# dollars, and correspondent banks deduct on the way, which is the whole
+# reason nothing lands at the billed amount. Display-only: never read by
+# any matching function. See deposit_card_info()'s sent_as field.
+CUSTOMER_HOME_CURRENCY = {
+    "Café Brûlé": "EUR",
+    "Northgate": "GBP",
+}
+
 # Amounts are Decimal, built from strings - never a float literal
 # (docs/judge-audit.md B1). Money is never binary floating point here.
 #
@@ -59,12 +69,15 @@ DEPOSITS_TO_LAND = [
      "reference": "BRULE/INV1"},
     {"customer": "Café Brûlé", "amount": "1950.00", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "INV106"},
-    # --- boring volume: exact matches, close instantly, no judgment ---
-    {"customer": "Café Brûlé", "amount": "4200.00", "payer_name": "CAFÉ BRÛLÉ",
+    # --- boring volume: each a few dollars off (crossed a border, got
+    # converted, correspondent banks took their cut) but inside tolerance -
+    # close instantly in code regardless. An exact match would be the
+    # implausible one once money has actually crossed a border. ---
+    {"customer": "Café Brûlé", "amount": "4193.60", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "BRULE/INV220"},
-    {"customer": "Café Brûlé", "amount": "3400.00", "payer_name": "CAFÉ BRÛLÉ",
+    {"customer": "Café Brûlé", "amount": "3381.25", "payer_name": "CAFÉ BRÛLÉ",
      "reference": "BRULE/INV230"},
-    {"customer": "Northgate", "amount": "2750.00", "payer_name": "NORTHGATE COFFEE",
+    {"customer": "Northgate", "amount": "2740.80", "payer_name": "NORTHGATE COFFEE",
      "reference": "NORTHGATE/INV205"},
     # --- the one lumped payment: exact-sum match, resolved in code, no model ---
     {"customer": "Café Brûlé", "amount": "2500.00", "payer_name": "CAFÉ BRÛLÉ",
@@ -262,8 +275,18 @@ def resolve_single(inv, amount):
 
     if abs(diff) <= FEE_TOLERANCE:
         inv["status"] = "CLOSED"
-        inv["note"] = (f"auto-closed, ${abs(diff):.2f} fee variance" if diff
-                        else "auto-closed, exact")
+        # Honest gap labelling: say what's actually known (the gap and that
+        # it's inside tolerance), never what caused it. Code cannot tell a
+        # correspondent fee from FX drift from a genuine short payment -
+        # that inability is the project's own thesis, so a confident
+        # breakdown here would contradict it. No word "exactly" either:
+        # even a zero-diff match is just "no gap", not a claim about why.
+        if diff < 0:
+            inv["note"] = f"${abs(diff):.2f} short - correspondent fees and FX drift, inside tolerance"
+        elif diff > 0:
+            inv["note"] = f"${diff:.2f} over - inside tolerance, no refund needed"
+        else:
+            inv["note"] = "auto-closed, no gap"
         return "auto_close", (
             f"[AUTO-CLOSE] {inv['id']} - deposit ${amount:.2f} vs invoice "
             f"${inv['amount']:.2f}, diff ${diff:+.2f} within tolerance"

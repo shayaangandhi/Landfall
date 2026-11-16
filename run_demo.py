@@ -34,6 +34,7 @@ import json
 import os
 import time
 from datetime import datetime, timezone
+from decimal import ROUND_HALF_UP, Decimal
 
 import agent
 import refund as refund_mod
@@ -50,13 +51,13 @@ EMAIL_TEXT = (
 # so the two modes can never drift on which reference means which step.
 
 STEP_DESCRIPTIONS = {
-    "D1": "Northgate deposit lands, $12.85 short - fee variance, auto-closed in code.",
+    "D1": "Northgate deposit lands $12.85 short - inside tolerance, auto-closed in code.",
     "D2": "Café Brûlé deposit lands with a truncated reference - ambiguous, escalated.",
     "D3": "Café Brûlé deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
     "D4": "A fourth deposit confirms D2 was a partial payment - INV-104 closes, escalation withdrawn.",
-    "D5": "A boring deposit lands - exact match, closes INV-220 instantly in code.",
-    "D6": "Another boring deposit - exact match, closes INV-230 instantly in code.",
-    "D7": "A boring Northgate deposit - exact match, closes INV-205 instantly in code.",
+    "D5": "A boring deposit lands a few dollars short - inside tolerance, closes INV-220 instantly in code.",
+    "D6": "Another boring deposit, a few dollars short - inside tolerance, closes INV-230 instantly in code.",
+    "D7": "A boring Northgate deposit, a few dollars short - inside tolerance, closes INV-205 instantly in code.",
     "D8": "A single lumped payment lands - exact-sum match closes INV-221 and INV-222 together, in code, no model.",
     "REFUND": "The $150 overpayment on INV-106 is refunded.",
 }
@@ -319,7 +320,7 @@ def process_deposit(dep, accounts, invoices, escalations):
 
 
 def poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids, snapshots,
-                      known_order=None, seen_references=None):
+                      fx_rates, known_order=None, seen_references=None):
     """A3: discovery, not a script. Re-reads GET /api/v1/deposits and
     processes anything not already seen (by id), through process_deposit()
     - the SAME function regardless of which deposit this turns out to be.
@@ -368,21 +369,37 @@ def poll_and_process(client, accounts, invoices, escalations, run_start, seen_id
         print(f"\n--- {label} (discovered via GET /deposits) ---")
         outcome = process_deposit(dep, accounts, invoices, escalations)
         spine.print_ledger(invoices)
-        dep_card = deposit_card_info(dep, accounts, reference, outcome)
+        dep_card = deposit_card_info(dep, accounts, reference, outcome, fx_rates)
         snapshots.append(snapshot(label, invoices, escalations, deposit=dep_card))
 
     return processed
 
 
-def deposit_card_info(dep, accounts, reference, outcome):
+def sent_as_for(usd_amount, customer, fx_rates):
+    """Display-only approximation of what the customer's own bank sent,
+    before correspondent fees and FX drift - never used in matching
+    (docs/judge-audit.md B3 extends to this: no figure derived from a
+    rate ever reaches a matching decision). fx_rates maps currency -> USD
+    per 1 unit, fetched once at run start from a live rate check, not a
+    quote - there is no client_rate to read, by design (see get_fx_rate)."""
+    home_currency = spine.CUSTOMER_HOME_CURRENCY.get(customer)
+    rate = fx_rates.get(home_currency) if home_currency else None
+    if not rate:
+        return None
+    foreign_amount = (usd_amount / rate).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return {"currency": home_currency, "amount": foreign_amount}
+
+
+def deposit_card_info(dep, accounts, reference, outcome, fx_rates):
     """The per-customer account is the project's actual novelty and
     previously appeared nowhere on screen - this is what the deposit card
     (view_template.html) renders at the top of each step."""
     customer = spine.account_customer(accounts, dep.get("global_account_id"))
     acct = accounts.get(customer, {})
     acct_id = acct.get("id", "")
+    usd_amount = dep.get("amount")
     return {
-        "amount": dep.get("amount"),
+        "amount": usd_amount,
         "currency": dep.get("currency", "USD"),
         "payer": payer_name_of(dep),
         "reference": reference,
@@ -390,6 +407,7 @@ def deposit_card_info(dep, accounts, reference, outcome):
         "account_id": acct_id,
         "account_id_last5": acct_id[-5:] if acct_id else "",
         "outcome": outcome,
+        "sent_as": sent_as_for(usd_amount, customer, fx_rates),
     }
 
 
@@ -515,6 +533,13 @@ def main():
     escalations = {}
     snapshots = []
 
+    print("\nFetching live FX rates (once, at run start - a rate check, not a quote)...")
+    fx_rates = {}
+    for currency in sorted(set(spine.CUSTOMER_HOME_CURRENCY.values())):
+        rate_payload = client.get_fx_rate(currency, "USD")
+        fx_rates[currency] = rate_payload["rate"]
+        print(f"  {currency}/USD indicative rate: {rate_payload['rate']}")
+
     print("\n" + "=" * 70)
     print("RUN 1  D1-D3 land")
     print("=" * 70)
@@ -527,7 +552,7 @@ def main():
     print("\nWaiting for deposits to settle, then polling GET /deposits...")
     time.sleep(5)
     found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids,
-                              snapshots, known_order=known_order, seen_references=seen_references)
+                              snapshots, fx_rates, known_order=known_order, seen_references=seen_references)
     print(f"\n  discovered and processed {len(found)} deposit(s)")
 
     print("\n" + "=" * 70)
@@ -541,7 +566,7 @@ def main():
     print("\nWaiting for it to settle, then polling GET /deposits again...")
     time.sleep(5)
     found = poll_and_process(client, accounts, invoices, escalations, run_start, seen_ids,
-                              snapshots, known_order=known_order, seen_references=seen_references)
+                              snapshots, fx_rates, known_order=known_order, seen_references=seen_references)
     if not found:
         print("  could not read the new deposit back yet - nothing new discovered this poll.")
 

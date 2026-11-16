@@ -35,6 +35,7 @@ import json
 import os
 import time
 from datetime import datetime, timezone
+from decimal import ROUND_HALF_UP, Decimal
 
 import config
 import spine
@@ -54,9 +55,9 @@ STEP_DESCRIPTIONS = {
     "D2": "Café Brûlé deposit lands with a truncated reference - tolerance band closes INV-108.",
     "D3": "Café Brûlé deposit overpays INV-106 by $150 - auto-closed, refund flagged.",
     "D4": "A fourth deposit arrives - no candidate within tolerance, no model to ask. Unresolved.",
-    "D5": "A boring deposit lands - exact match, closes INV-220 instantly in code.",
-    "D6": "Another boring deposit - exact match, closes INV-230 instantly in code.",
-    "D7": "A boring Northgate deposit - exact match, closes INV-205 instantly in code.",
+    "D5": "A boring deposit lands a few dollars short - inside tolerance, closes INV-220 instantly in code.",
+    "D6": "Another boring deposit, a few dollars short - inside tolerance, closes INV-230 instantly in code.",
+    "D7": "A boring Northgate deposit, a few dollars short - inside tolerance, closes INV-205 instantly in code.",
     "D8": "A single lumped payment lands - exact-sum match closes INV-221 and INV-222 together, in code, no model.",
 }
 
@@ -156,12 +157,26 @@ def payer_name_of(dep):
     return dep.get("payer_name", "")
 
 
-def deposit_card_info(dep, accounts, reference, outcome):
+def sent_as_for(usd_amount, customer, fx_rates):
+    """Same as run_demo.py's - display-only, never read by any matching
+    function. Kept duplicated rather than imported across files to avoid
+    a cross-import for one small function; see run_demo.py for the full
+    rationale on why there's no client_rate to read here."""
+    home_currency = spine.CUSTOMER_HOME_CURRENCY.get(customer)
+    rate = fx_rates.get(home_currency) if home_currency else None
+    if not rate:
+        return None
+    foreign_amount = (usd_amount / rate).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return {"currency": home_currency, "amount": foreign_amount}
+
+
+def deposit_card_info(dep, accounts, reference, outcome, fx_rates):
     customer = spine.account_customer(accounts, dep.get("global_account_id"))
     acct = accounts.get(customer, {})
     acct_id = acct.get("id", "")
+    usd_amount = dep.get("amount")
     return {
-        "amount": dep.get("amount"),
+        "amount": usd_amount,
         "currency": dep.get("currency", "USD"),
         "payer": payer_name_of(dep),
         "reference": reference,
@@ -169,6 +184,7 @@ def deposit_card_info(dep, accounts, reference, outcome):
         "account_id": acct_id,
         "account_id_last5": acct_id[-5:] if acct_id else "",
         "outcome": outcome,
+        "sent_as": sent_as_for(usd_amount, customer, fx_rates),
     }
 
 
@@ -213,7 +229,7 @@ def process_deposit(dep, accounts, invoices):
 
 
 def poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
-                      known_order=None, seen_references=None):
+                      fx_rates, known_order=None, seen_references=None):
     """Same discovery approach as run_demo.poll_and_process, including the
     two ordering fixes found while testing that file: known_order breaks
     the sandbox's 1-second created_at ties using our own submission order,
@@ -243,7 +259,7 @@ def poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
         print(f"\n--- {label} (discovered via GET /deposits) ---")
         outcome = process_deposit(dep, accounts, invoices)
         spine.print_ledger(invoices)
-        dep_card = deposit_card_info(dep, accounts, reference, outcome)
+        dep_card = deposit_card_info(dep, accounts, reference, outcome, fx_rates)
         snapshots.append(snapshot(label, invoices, deposit=dep_card))
 
     return processed
@@ -305,6 +321,13 @@ def main():
     invoices = spine.seed_ledger()  # IDENTICAL fixtures to run_demo.py
     snapshots = []
 
+    print("\nFetching live FX rates (once, at run start - a rate check, not a quote)...")
+    fx_rates = {}
+    for currency in sorted(set(spine.CUSTOMER_HOME_CURRENCY.values())):
+        rate_payload = client.get_fx_rate(currency, "USD")
+        fx_rates[currency] = rate_payload["rate"]
+        print(f"  {currency}/USD indicative rate: {rate_payload['rate']}")
+
     print("\n" + "=" * 70)
     print("RUN 1  D1-D3 land")
     print("=" * 70)
@@ -316,7 +339,7 @@ def main():
 
     print("\nWaiting for deposits to settle, then polling GET /deposits...")
     time.sleep(5)
-    poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
+    poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots, fx_rates,
                       known_order=known_order, seen_references=seen_references)
 
     print("\n" + "=" * 70)
@@ -329,7 +352,7 @@ def main():
 
     print("\nWaiting for it to settle, then polling GET /deposits again...")
     time.sleep(5)
-    poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots,
+    poll_and_process(client, accounts, invoices, run_start, seen_ids, snapshots, fx_rates,
                       known_order=known_order, seen_references=seen_references)
 
     spine.print_ledger(invoices)

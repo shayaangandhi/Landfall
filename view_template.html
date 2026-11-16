@@ -297,6 +297,14 @@
     font-family: var(--mono);
   }
 
+  .sent-as {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    margin-top: 2px;
+  }
+
   .deposit-card .outcome {
     font-size: 15px;
     font-weight: 600;
@@ -645,6 +653,7 @@
           <div class="deposit-stat">
             <div class="k">Amount</div>
             <div class="v">${fmtMoney(d.amount, d.currency)}</div>
+            ${d.sent_as ? `<div class="sent-as">&approx; ${escapeHtml(d.sent_as.currency)} ${Number(d.sent_as.amount).toLocaleString("en-US")} sent, at today's indicative rate</div>` : ""}
           </div>
           <div class="deposit-stat">
             <div class="k">Payer</div>

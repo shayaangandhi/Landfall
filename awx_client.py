@@ -98,6 +98,19 @@ class AwxClient:
             raise RuntimeError(f"list_deposits failed [HTTP {status}]: {payload}")
         return _as_list(payload)
 
+    def get_fx_rate(self, sell_currency, buy_currency="USD"):
+        """A rate check, not a quote - no quote_id, no client_rate. Read the
+        top-level `rate` field (confirmed live: it matches the CLIENT level
+        entry in rate_details). No x-api-version header - confirmed none is
+        sent by default here, and a stale one returns incorrect_version per
+        the builder guide."""
+        status, payload = self._call(
+            "GET", f"/api/v1/fx/rates/current?sell_currency={sell_currency}&buy_currency={buy_currency}"
+        )
+        if status != 200:
+            raise RuntimeError(f"get_fx_rate failed [HTTP {status}]: {payload}")
+        return payload
+
     def beneficiary_schema(self, country_code, currency, transfer_method, entity_type="COMPANY"):
         body = {"country_code": country_code, "currency": currency,
                 "transfer_method": transfer_method, "entity_type": entity_type}

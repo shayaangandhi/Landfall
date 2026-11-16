@@ -6,7 +6,11 @@ not discover by experiment what the guide already documents. Kit 1 and kit 3's
 "Watch out for" sections and the "Sandbox constraints" section cover
 beneficiaries, transfers and FX.
 
-Solo build. Submission closes **Sun 15 Nov 23:59 PT** (01:59 Mon, America/Chicago).
+Solo build. **Already submitted** — the HackerEarth portal closed Sat 15 Nov
+12:29 PM Central; submission went in at 12:28. The "Sun 15 Nov 23:59 PT"
+deadline below was wrong (left over from an earlier read of the rules) and
+is no longer live. Work from here on is not racing a clock: it's a better
+video and a shareable link, post-submission.
 Deliverables: working demo, video **under 5 min**, repo with setup instructions,
 uploaded on the HackerEarth microsite. Repo may be private if shared with
 GitHub user `danxkim`. Sandbox only, synthetic data, no real money.
