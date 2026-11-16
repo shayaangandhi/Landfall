@@ -305,6 +305,43 @@ def resolve_single(inv, amount):
         )
 
 
+def candidate_arithmetic(candidates, amount):
+    """Every reading of a deposit against its candidate invoices that
+    arithmetic alone can produce - no email, no model. Two shapes:
+
+    singles: for every candidate, the deposit-minus-invoice diff, so a
+    caller can spot an overpayment that's too large to be ordinary fee/FX
+    noise (same FEE_TOLERANCE used everywhere else - no new threshold).
+
+    splits: every pair where one candidate's full amount fits inside the
+    deposit with a genuine (not tolerance-sized) remainder left over, and
+    that remainder is itself a valid partial (less than its full amount)
+    toward a different open candidate. This is how a single deposit can
+    plausibly be "invoice A in full, plus a partial start on invoice B" -
+    the two-invoice reading docs/judge-audit.md's D2 escalation was
+    silently not naming.
+
+    A caller still needs the email to decide which candidate is ruled out
+    entirely (as D2's email rules out INV-108) - any single or split
+    reading touching that candidate stops being live once the email does
+    that. This function only enumerates what the numbers alone allow.
+    """
+    singles = [{"invoice": c, "diff": round(amount - c["amount"], 2)} for c in candidates]
+
+    splits = []
+    for full in candidates:
+        remainder = round(amount - full["amount"], 2)
+        if remainder <= FEE_TOLERANCE:
+            continue  # doesn't even cover `full`, or is itself the tidy single-invoice fit
+        for partial in candidates:
+            if partial is full:
+                continue
+            if 0 < remainder < partial["amount"]:
+                splits.append({"full": full, "partial": partial, "remainder": remainder})
+
+    return singles, splits
+
+
 def apply_matching(invoices, deposits, accounts):
     print("\nMatching (fixed rules only - ambiguous cases wait for the agent layer):")
     for dep in deposits:

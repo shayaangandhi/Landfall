@@ -14,7 +14,7 @@
         "outcome": "INV-112 - $12.85 off, within the $64.00 tolerance band",
         "sent_as": {
           "currency": "GBP",
-          "amount": "2425"
+          "amount": "2426"
         }
       },
       "ledger": [
@@ -99,7 +99,7 @@
         "outcome": "INV-108 - $40.00 off, within the $50.00 tolerance band",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2107"
+          "amount": "2108"
         }
       },
       "ledger": [
@@ -184,7 +184,7 @@
         "outcome": "INV-106 - overpaid $150.00",
         "sent_as": {
           "currency": "EUR",
-          "amount": "1779"
+          "amount": "1780"
         }
       },
       "ledger": [
@@ -269,7 +269,7 @@
         "outcome": "INV-220 - $6.40 off, within the $84.00 tolerance band",
         "sent_as": {
           "currency": "EUR",
-          "amount": "3825"
+          "amount": "3828"
         }
       },
       "ledger": [
@@ -354,7 +354,7 @@
         "outcome": "INV-230 - $18.75 off, within the $68.00 tolerance band",
         "sent_as": {
           "currency": "EUR",
-          "amount": "3084"
+          "amount": "3086"
         }
       },
       "ledger": [
@@ -524,7 +524,7 @@
         "outcome": "Lumped payment - covers INV-221 + INV-222 exactly ($2500.00), closed in code",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2280"
+          "amount": "2282"
         }
       },
       "ledger": [
@@ -609,7 +609,7 @@
         "outcome": "no candidate within tolerance among (INV-104) - no model available, flagging for a human",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2454"
+          "amount": "2455"
         }
       },
       "ledger": [

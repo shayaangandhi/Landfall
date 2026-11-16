@@ -105,6 +105,47 @@ def ledger_facts_for(invoices, customer, prior_candidate_ids, current_candidate_
     return facts
 
 
+def candidate_readings(candidates, amount, tidy_match_id):
+    """Code-only arithmetic on top of spine.candidate_arithmetic: drop any
+    split that touches the invoice the email has already ruled out
+    (tidy_match_id - the same invoice the model's tidy_match_rejection
+    covers), and flag any remaining single-invoice overpayment that's
+    outside ordinary fee tolerance as implausible. No model call here -
+    the email already did its one job (naming which invoice is out); the
+    rest is just arithmetic on what's left.
+
+    Returns (also_possible, ruled_out) as display-ready strings, plus
+    live_splits (the raw dicts, kept on the escalation record so a later
+    combined close can prove the alternate reading false with real
+    numbers, not just assert it).
+    """
+    singles, splits = spine.candidate_arithmetic(candidates, amount)
+
+    live_splits = [
+        s for s in splits
+        if s["full"]["id"] != tidy_match_id and s["partial"]["id"] != tidy_match_id
+    ]
+    also_possible = [
+        f"{s['full']['id']} in full (${s['full']['amount']:,.2f}) plus "
+        f"${s['remainder']:,.2f} toward {s['partial']['id']} — the email "
+        f"supports both"
+        for s in live_splits
+    ]
+
+    ruled_out = []
+    for single in singles:
+        inv, diff = single["invoice"], single["diff"]
+        if inv["id"] == tidy_match_id or diff <= spine.FEE_TOLERANCE:
+            continue
+        pct = (diff / inv["amount"]) * 100
+        ruled_out.append(
+            f"{inv['id']} overpaid by ${diff:,.2f} — a {pct:.0f}% overpayment, "
+            f"outside normal fee/FX-drift range"
+        )
+
+    return also_possible, ruled_out, live_splits
+
+
 def new_escalation(dep, customer, candidates):
     return {
         "deposit_id": dep.get("id"),
@@ -121,6 +162,7 @@ def new_escalation(dep, customer, candidates):
         "status": "OPEN",
         "revisions": 0,
         "ledger_facts": [],
+        "also_possible_splits": [],
     }
 
 
@@ -140,9 +182,15 @@ def ask_agent_and_record(dep, customer, candidates):
         print("  falling back to a plain escalation with no accepted recommendation.")
         return record
 
+    also_possible, ruled_out, live_splits = candidate_readings(
+        candidates, record["amount"], proposal.get("tidy_match_id")
+    )
+    record["also_possible_splits"] = live_splits
+
     record["model_recommendation"] = proposal
     record["card_fields"] = agent.escalation_card_fields(
         record["label"], record["amount"], record["currency"], customer, proposal,
+        also_possible=also_possible, ruled_out=ruled_out,
     )
     print()
     print(agent.render_escalation_card(record["card_fields"]))
@@ -193,10 +241,13 @@ def reevaluate_single_escalation(rec, invoices):
     rec["revisions"] += 1
 
     if accepted:
+        also_possible, ruled_out, _ = candidate_readings(
+            current, rec["amount"], proposal.get("tidy_match_id")
+        )
         rec["model_recommendation"] = proposal
         rec["card_fields"] = agent.escalation_card_fields(
             rec["label"], rec["amount"], rec["currency"], rec["counterparty"],
-            proposal, ledger_facts=facts,
+            proposal, ledger_facts=facts, also_possible=also_possible, ruled_out=ruled_out,
         )
         print()
         print(agent.render_escalation_card(rec["card_fields"]))
@@ -244,6 +295,28 @@ def try_combined_close(inv, amount, customer, label, escalations, dep_id):
             print(f"    ${rec['amount']:.2f} ({rec['label']}) + ${amount:.2f} ({label}) = "
                   f"${combined:.2f} ≈ {inv['id']} (${inv['amount']:.2f}). "
                   f"Recalculated in code, not re-judged.")
+
+            # The arrival of exactly this amount doesn't just confirm the
+            # proposed reading - it's the arithmetic that rules the
+            # alternate reading (stored at escalation time, before it
+            # narrowed out of existence) out. Real numbers, not a canned
+            # line: if `full` had actually been paid off by the earlier
+            # deposit, `inv` would still be short by its own full amount
+            # minus that deposit's remainder - a different number than
+            # what just arrived.
+            for split in rec.get("also_possible_splits", []):
+                if split["partial"]["id"] != inv["id"]:
+                    continue
+                alt_needed = round(inv["amount"] - split["remainder"], 2)
+                outcome += (
+                    f". Rules out the other reading too: if {rec['label']} had included "
+                    f"{split['full']['id']} (${split['full']['amount']:,.2f}) in full, "
+                    f"{inv['id']} would still need ${alt_needed:,.2f} here, not ${amount:,.2f}."
+                )
+                print(f"    also rules out the alternate reading: if {rec['label']} had "
+                      f"included {split['full']['id']} in full, {inv['id']} would need "
+                      f"${alt_needed:,.2f} here, not ${amount:,.2f}.")
+
             print(f"    escalation for deposit {rec['deposit_id']} is now WITHDRAWN.")
             return True, outcome
     return False, None

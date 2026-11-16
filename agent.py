@@ -229,13 +229,20 @@ def validate_proposal(proposal, candidates):
 
 
 def escalation_card_fields(deposit_label, amount, currency, counterparty,
-                            proposal, ledger_facts=None):
+                            proposal, ledger_facts=None, also_possible=None, ruled_out=None):
     """The single source of truth for an escalation card's content - a
     plain dict, reused by the terminal renderer and the JSON snapshot
     export so both show exactly the same fields in exactly the same order.
     Every fact about ledger state (what's already closed, and why) comes
     from ledger_facts, which the caller derives from actual invoice state -
-    never from the model, which is never asked about it."""
+    never from the model, which is never asked about it.
+
+    also_possible/ruled_out are likewise code-computed (run_demo.candidate_readings,
+    pure arithmetic on the candidates and the deposit amount) - never asked
+    of the model. When a live alternate reading exists, the unproven line
+    is replaced with a plain statement of that fact rather than whatever
+    the model wrote, because at that point it's something code knows for
+    certain, not something anyone had to judge."""
     rejected = None
     tidy_id = proposal.get("tidy_match_id")
     # Only a genuine rejection - if the tidy match IS the final proposal
@@ -250,15 +257,22 @@ def escalation_card_fields(deposit_label, amount, currency, counterparty,
 
     related = [i for i in (proposal.get("proposed_invoice_id"), proposal.get("tidy_match_id")) if i]
 
+    also_possible = also_possible or []
+    unproven = proposal.get("unproven_reason")
+    if also_possible:
+        unproven = "The evidence supports both live readings. Only the customer can separate them."
+
     return {
         "deposit_label": deposit_label,
         "amount": amount,
         "currency": currency,
         "counterparty": counterparty,
         "proposed": proposal.get("proposed_summary") or "No proposal - escalate as-is",
+        "also_possible": also_possible,
         "rejected": rejected,
+        "ruled_out": ruled_out or [],
         "supporting": supporting,
-        "unproven": proposal.get("unproven_reason"),
+        "unproven": unproven,
         "confidence": proposal.get("confidence", "unknown"),
         # code-known, not parsed from text - the UI highlights exactly these
         # invoices as "under escalation" without guessing from prose.
@@ -289,8 +303,14 @@ def render_escalation_card(fields, width=58):
 
     lines += field("Proposed", [fields["proposed"]])
 
+    for i, alt in enumerate(fields.get("also_possible") or []):
+        lines += field("Also possible" if i == 0 else "", textwrap.wrap(alt, width=width) or [""])
+
     if fields["rejected"]:
         lines += wrapped("Rejected", fields["rejected"])
+
+    for i, ro in enumerate(fields.get("ruled_out") or []):
+        lines += field("Ruled out" if i == 0 else "", textwrap.wrap(ro, width=width) or [""])
 
     for i, fact in enumerate(fields["supporting"]):
         wrapped_lines = textwrap.wrap(fact, width=width) or [""]

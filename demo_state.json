@@ -14,7 +14,7 @@
         "outcome": "INV-112 - deposit $3187.15 vs invoice $3200.00, diff $-12.85 within tolerance",
         "sent_as": {
           "currency": "GBP",
-          "amount": "2425"
+          "amount": "2426"
         }
       },
       "ledger": [
@@ -99,7 +99,7 @@
         "outcome": "Ambiguous - escalated: Partial payment starting INV-104 (advisory, needs a person)",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2107"
+          "amount": "2108"
         }
       },
       "ledger": [
@@ -174,11 +174,17 @@
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
           "proposed": "Partial payment starting INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest arithmetic fit. Email says INV-108 is disputed and held.",
+          "also_possible": [
+            "INV-106 in full ($1,800.00) plus $510.00 toward INV-104 \u2014 the email supports both"
+          ],
+          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. INV-108 is disputed and held, not being paid.",
+          "ruled_out": [
+            "INV-106 overpaid by $510.00 \u2014 a 28% overpayment, outside normal fee/FX-drift range"
+          ],
           "supporting": [
             "Email: \"starting on INV-104 this week\""
           ],
-          "unproven": "Reference 'INV1' and amount don't exactly match any invoice.",
+          "unproven": "The evidence supports both live readings. Only the customer can separate them.",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -202,7 +208,7 @@
         "outcome": "INV-106 - overpaid by $150.00",
         "sent_as": {
           "currency": "EUR",
-          "amount": "1779"
+          "amount": "1780"
         }
       },
       "ledger": [
@@ -276,13 +282,15 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment, start of INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108, disputed line item.",
+          "proposed": "Partial payment, starting INV-104",
+          "also_possible": [],
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Email says INV-108 is disputed and held, not paid.",
+          "ruled_out": [],
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' is truncated, amount doesn't match INV-104 exactly",
+          "unproven": "Reference 'BRULE/INV1' is truncated, exact invoice unclear",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -306,7 +314,7 @@
         "outcome": "INV-220 - deposit $4193.60 vs invoice $4200.00, diff $-6.40 within tolerance",
         "sent_as": {
           "currency": "EUR",
-          "amount": "3825"
+          "amount": "3827"
         }
       },
       "ledger": [
@@ -380,13 +388,15 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment, start of INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108, disputed line item.",
+          "proposed": "Partial payment, starting INV-104",
+          "also_possible": [],
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Email says INV-108 is disputed and held, not paid.",
+          "ruled_out": [],
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' is truncated, amount doesn't match INV-104 exactly",
+          "unproven": "Reference 'BRULE/INV1' is truncated, exact invoice unclear",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -410,7 +420,7 @@
         "outcome": "INV-230 - deposit $3381.25 vs invoice $3400.00, diff $-18.75 within tolerance",
         "sent_as": {
           "currency": "EUR",
-          "amount": "3084"
+          "amount": "3086"
         }
       },
       "ledger": [
@@ -484,13 +494,15 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment, start of INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108, disputed line item.",
+          "proposed": "Partial payment, starting INV-104",
+          "also_possible": [],
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Email says INV-108 is disputed and held, not paid.",
+          "ruled_out": [],
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' is truncated, amount doesn't match INV-104 exactly",
+          "unproven": "Reference 'BRULE/INV1' is truncated, exact invoice unclear",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -588,13 +600,15 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment, start of INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108, disputed line item.",
+          "proposed": "Partial payment, starting INV-104",
+          "also_possible": [],
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Email says INV-108 is disputed and held, not paid.",
+          "ruled_out": [],
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' is truncated, amount doesn't match INV-104 exactly",
+          "unproven": "Reference 'BRULE/INV1' is truncated, exact invoice unclear",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -618,7 +632,7 @@
         "outcome": "Lumped payment - covers INV-221 + INV-222 exactly ($2500.00), closed in code",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2280"
+          "amount": "2281"
         }
       },
       "ledger": [
@@ -692,13 +706,15 @@
           "amount": "2310.0",
           "currency": "USD",
           "counterparty": "Caf\u00e9 Br\u00fbl\u00e9",
-          "proposed": "Partial payment, start of INV-104",
-          "rejected": "INV-108 \u2014 $2,350 less ~$40 is $2,310, closest fit. Customer is holding INV-108, disputed line item.",
+          "proposed": "Partial payment, starting INV-104",
+          "also_possible": [],
+          "rejected": "INV-108 \u2014 $2,350.00 less ~$40 is $2,310.00, closest arithmetic fit. Email says INV-108 is disputed and held, not paid.",
+          "ruled_out": [],
           "supporting": [
             "Email: \"starting on INV-104 this week\"",
             "INV-106 closed by deposit D3 earlier in this run."
           ],
-          "unproven": "Reference 'BRULE/INV1' is truncated, amount doesn't match INV-104 exactly",
+          "unproven": "Reference 'BRULE/INV1' is truncated, exact invoice unclear",
           "confidence": "medium",
           "related_invoice_ids": [
             "INV-104",
@@ -719,10 +735,10 @@
         "account_customer": "Caf\u00e9 Br\u00fbl\u00e9",
         "account_id": "83725c9d-3b4b-46ed-a6df-f6afd1ac2831",
         "account_id_last5": "c2831",
-        "outcome": "Confirms D2's partial payment - closes INV-104 ($2310.00 + $2690.00 = $5000.00), withdraws escalation",
+        "outcome": "Confirms D2's partial payment - closes INV-104 ($2310.00 + $2690.00 = $5000.00), withdraws escalation. Rules out the other reading too: if D2 had included INV-106 ($1,800.00) in full, INV-104 would still need $4,490.00 here, not $2,690.00.",
         "sent_as": {
           "currency": "EUR",
-          "amount": "2454"
+          "amount": "2455"
         }
       },
       "ledger": [
